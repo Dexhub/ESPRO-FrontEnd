@@ -1,3 +1,117 @@
-<h1>
-  {{title}}
-</h1>
+<h3 class="heading">ROE simulation Test</h3>
+<div>
+  <span class="font-red"> &nbsp; &nbsp; &nbsp; &nbsp;{{error}}</span><br/>
+  <form role="form" [formGroup]="form" (ngSubmit)="onSubmit(form.value)">
+    <div class="form-div">
+      <fieldset class="form-group">
+        <label>Wallet Amount</label>
+        <input class="form-control" type="number" formControlName="walletAmount" (change)="changeBet()">
+      </fieldset>
+
+      <fieldset class="form-group">
+        <label>Bet Amount</label>
+        <input class="form-control" type="number" formControlName="betAmount">
+      </fieldset>
+
+      <fieldset class="form-group">
+        <label>RTP</label>
+        <input class="form-control" type="number" formControlName="RTP">
+      </fieldset>
+      <fieldset class="form-group">
+        <label>Number Of Experiments</label>
+        <input class="form-control" type="number" formControlName="numberOfExperiments">
+      </fieldset>
+      <fieldset class="form-group">
+        <label>Spins / Second for base server</label>
+        <input class="form-control" type="number" formControlName="serverCapacity">
+      </fieldset>
+    </div>
+    <div class="heading">
+      <button type="submit" class="ui primary button marginTop22" [disabled]="roeCalculationRunning">Calculate Result</button>
+    </div>
+  </form>
+</div>
+
+<br><br>
+<div class="row no-margin" *ngIf="roeData[0]">
+  <div class="col-lg-12">
+    <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 pb-10 textRight">
+      <button (click)="clearResult()" class="ui button default pull-right search-field-h">Clear Result</button>
+    </div>
+    <h5 class="heading">ROE data</h5>
+      <table class="col-lg-12 table no-margin bg-color-inherit table-striped">
+        <thead>
+          <tr>
+            <th>Wallet</th>
+            <th>Bet Amount</th>
+            <th class="font-red">Game RTP</th>
+            <th class="font-red">Spin Required to<br/> Empty Wallet</th>
+            <th>Number of<br/>Experiments</th>
+            <th>Spins / Second<br/>For Base Server</th>
+            <th>Total Spins For<br/>Whole Experiment</th>
+            <th>Time Required For<br/>1 Server(Minutes)</th>
+            <th>result</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let data of roeData; let i = index">
+            <tr>
+              <td>{{data.walletAmount}}</td>
+              <td>{{data.betAmount}}</td>
+              <td>{{data.RTP}}</td>
+              <td>{{ (roeCalculationRunning) ? 'Loading...' : data.ROE}}</td>
+              <td>{{data.numberOfExperiments}}</td>
+              <td>{{data.serverCapacity}}</td>
+              <td>{{data.totalSpins}}</td>
+              <td>{{data.timeForOneServer}}</td>
+              <td>
+                <button type="button" class="ui primary button" (click)="changeRoeShowStatus(data.roundId)">
+                  {{(roundDataToShow[data.roundId].show) ? 'Hide Result' :'View Result'}}
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="roundDataToShow[data.roundId].show">
+                <td colspan="9">
+                  <div class="modal-footer">
+                    <div class="btn-group-xs">
+                      <button *ngFor="let page of roundData[data.roundId].pageNumbers"
+                      (click)="paginateRoundData(data.roundId, page)"
+                      type="button" class="btn btn-primary button">{{page + 1}}</button>
+                    </div>
+                  </div>
+                  <div class="col-lg-12 roundDataTable">
+                      <table class="col-lg-12 table no-margin bg-color-inherit table-striped">
+                        <thead>
+                          <!-- <tr> -->
+                            <th>Round Id</th>
+                            <th>Initial Wallet</th>
+                            <th>Deducted Wallet Amount</th>
+                            <th>Resulted Wallet Amount</th>
+                          <!-- </tr> -->
+                        </thead>
+                        <tbody>
+                          <ng-container *ngFor="let tempRoundData of roundData[data.roundId].tempRoundData; let j = index">
+                            <tr>
+                              <td>{{tempRoundData.roundId}}</td>
+                              <td>{{tempRoundData.initialAmount}}</td>
+                              <td>{{tempRoundData.deductedAmount}}</td>
+                              <td>{{tempRoundData.resultAmount}}</td>
+                            </tr>
+                          </ng-container>
+                        </tbody>
+                      </table>
+                  </div>
+                  <div class="modal-footer">
+                    <div class="btn-group-xs">
+                      <button *ngFor="let page of roundData[data.roundId].pageNumbers"
+                       (click)="paginateRoundData(data.roundId, page)"
+                      type="button" class="btn btn-primary button">{{page + 1}}</button>
+                    </div>
+                  </div>
+                </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+  </div>
+</div>
