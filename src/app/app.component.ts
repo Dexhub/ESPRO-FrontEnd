@@ -34,7 +34,8 @@ export interface RoeDataSchema {
   numberOfExperiments: number,
   serverCapacity: number,
   totalSpins: number,
-  timeForOneServer: number
+  timeForOneServer: number,
+  cost: number
 }
 
 @Component({
@@ -78,6 +79,10 @@ export class AppComponent {
     }
   }
 
+  numberFormat(value:number) {
+    return value.toFixed(2);
+  }
+
   getPageNumbersOfRoundData(roundId:string) {
     this.roundData[roundId].pageNumbers = [];
     let roundsPerPage:number = (this.roundData[roundId].data.length > 1450) ? Math.ceil(this.roundData[roundId].data.length / 29) : 50;
@@ -112,6 +117,7 @@ export class AppComponent {
       this.roeData[0].ROE = ROE;
       this.roeData[0].totalSpins = data.numberOfExperiments * ROE;
       this.roeData[0].timeForOneServer = this.roeData[0].totalSpins / (data.serverCapacity * 60);
+      this.roeData[0].cost = (this.roeData[0].timeForOneServer / 60) * 0.052;
       this.roeCalculationRunning = false;
       this.getPageNumbersOfRoundData(roundId);
       this.paginateRoundData(roundId, 0);

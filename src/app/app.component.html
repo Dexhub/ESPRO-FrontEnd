@@ -22,7 +22,7 @@
         <input class="form-control" type="number" formControlName="numberOfExperiments">
       </fieldset>
       <fieldset class="form-group">
-        <label>Spins / Second for base server</label>
+        <label>Spins / Second for a t2 medium</label>
         <input class="form-control" type="number" formControlName="serverCapacity">
       </fieldset>
     </div>
@@ -50,6 +50,7 @@
             <th>Spins / Second<br/>For Base Server</th>
             <th>Total Spins For<br/>Whole Experiment</th>
             <th>Time Required For<br/>1 Server(Minutes)</th>
+            <th>Total Cost($)</th>
             <th>result</th>
           </tr>
         </thead>
@@ -63,7 +64,8 @@
               <td>{{data.numberOfExperiments}}</td>
               <td>{{data.serverCapacity}}</td>
               <td>{{data.totalSpins}}</td>
-              <td>{{data.timeForOneServer}}</td>
+              <td>{{numberFormat(data.timeForOneServer)}}</td>
+              <td>{{numberFormat(data.cost)}}</td>
               <td>
                 <button type="button" class="ui primary button" (click)="changeRoeShowStatus(data.roundId)">
                   {{(roundDataToShow[data.roundId].show) ? 'Hide Result' :'View Result'}}
