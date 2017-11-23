@@ -49,8 +49,8 @@
             <th>Number of<br/>Experiments</th>
             <th>Spins / Second<br/>For Base Server</th>
             <th>Total Spins For<br/>Whole Experiment</th>
-            <th>Time Required For<br/>1 Server(Minutes)</th>
-            <th>Total Cost($)</th>
+            <th>Time Required For<br/>1 Server (Minutes)</th>
+            <th>Total Cost <br/>(Total Hours * cost for 1 hour)</th>
             <th>result</th>
           </tr>
         </thead>
@@ -64,7 +64,7 @@
               <td>{{data.numberOfExperiments}}</td>
               <td>{{data.serverCapacity}}</td>
               <td>{{data.totalSpins}}</td>
-              <td>{{numberFormat(data.timeForOneServer)}}</td>
+              <td>{{numberFormat(data.timeForOneServer)}} ({{numberFormat(data.timeForOneServer / 60)}} hours)</td>
               <td>{{numberFormat(data.cost)}}</td>
               <td>
                 <button type="button" class="ui primary button" (click)="changeRoeShowStatus(data.roundId)">
