@@ -1,10 +1,10 @@
-import { RoeUniformPage } from './app.po';
+import { EveningstarPage } from './app.po';
 
-describe('roe-uniform App', () => {
-  let page: RoeUniformPage;
+describe('eveningstar App', () => {
+  let page: EveningstarPage;
 
   beforeEach(() => {
-    page = new RoeUniformPage();
+    page = new EveningstarPage();
   });
 
   it('should display message saying app works', () => {

@@ -1,0 +1,126 @@
+<h3 class="heading">Authenticate Exchange</h3>
+<div class="col-lg-12 col-md-12" style="display:flex">
+  <div class="col-lg-6 col-md-6">
+    <span class="font-red"> &nbsp; &nbsp; &nbsp; &nbsp;{{error}}</span><br/>
+    <form role="form" [formGroup]="form" (ngSubmit)="onSubmit(form.value)">
+      <div class="form-div1">
+        <fieldset class="form-group">
+          <label>Exchange</label>
+          <select class="ui default button" formControlName="exchangeId">
+            <option value="">select exchange</option>
+            <option *ngFor="let option of exchanges" value="{{option.exchangeId}}">{{option.exchangeName}}</option>
+          </select>
+        </fieldset>
+
+        <fieldset class="form-group">
+          <label>Access Key</label>
+          <input class="form-control" type="text" formControlName="apiKey">
+        </fieldset>
+
+        <fieldset class="form-group">
+          <label>Secret</label>
+          <input class="form-control" type="text" formControlName="secret">
+        </fieldset>
+
+        <fieldset class="form-group">
+          <label>Password</label>
+          <input class="form-control" type="text" formControlName="passPhrase">
+        </fieldset>
+      </div>
+      <div class="heading">
+        <button type="submit" class="ui primary button marginTop22" [disabled]="addUser">Authenticate</button>
+      </div>
+    </form>
+  </div>
+  <div class="col-lg-6 col-md-6">
+    <h5 class="heading">Api Keys</h5>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Exchange</th>
+          <th>Api Key</th>
+          <th>Secret</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let account of userAccounts; let i = index">
+          <tr>
+            <td>{{account.exchangeName}}</td>
+            <td><input class="form-control" value="{{account.apiKey}}" [disabled]="true"></td>
+            <td><input class="form-control" value="{{account.secret}}" [disabled]="true"></td>
+            <td>
+              <button class="ui primary button action" (click)="syncBalance(account.exchangeId)"
+                [disabled]="balanceSync[account.exchangeId]">
+                sync balance
+              </button>
+              <button class="ui success button action" (click)="syncTradeHistory(account.exchangeId)"
+                [disabled]="tradesSync[account.exchangeId]">
+                sync trades history
+              </button>
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="col-lg-12 col-md-12" style="display:flex">
+  <div class="col-lg-6 col-md-6">
+    <h5 class="heading">Trades History &nbsp &nbsp &nbsp <button class="ui primary button action" (click)="getTradesHistory()"><i class="fa fa-refresh"></i></button></h5>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Trade Id</th>
+          <th>Exchange</th>
+          <th>Symbol Pair</th>
+          <th>Trade Type</th>
+          <th>Trade Price</th>
+          <th>Trade Size</th>
+          <th>Trade Fee</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let trade of trades; let i = index">
+          <tr>
+            <td>{{trade.tradeId}}</td>
+            <td>{{trade.exchangeName}}</td>
+            <td>{{trade.symbolPair}}</td>
+            <td>{{trade.tradeType}}</td>
+            <td>{{trade.tradePrice}}</td>
+            <td>{{trade.tradeSize}}</td>
+            <td>{{trade.tradeFee}}</td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+  <div class="col-lg-6 col-md-6" style="border-left: 1px solid black">
+    <h5 class="heading">Aggregate Amount &nbsp &nbsp &nbsp <button class="ui primary button action" (click)="getAggregationAmount()"><i class="fa fa-refresh"></i></button> </h5>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Coin</th>
+          <th>Amount</th>
+          <th>Price</th>
+          <th>Change(24 hour)</th>
+          <th>Value(%)</th>
+          <th>ROI</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let obj of aggregateAmount; let i = index">
+          <tr>
+            <td>{{obj.coin}}</td>
+            <td>{{numberFormat(obj.amount)}}</td>
+            <td>{{numberFormat(obj.priceInUsd)}}</td>
+            <td>{{numberFormat(obj.change24Hour)}}</td>
+            <td>{{numberFormat(obj.value) + "(" + numberFormat(obj.valuePercentage) +")"}}</td>
+            <td>{{numberFormat(obj.ROI)}}</td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+</div>
