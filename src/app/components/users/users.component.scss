@@ -1,3 +1,24 @@
+.modal-footer {
+  padding: 15px;
+  text-align: right;
+  border-top: 1px solid #e5e5e5;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+
+  &.content-end {
+    -webkit-box-pack: end;
+    -ms-flex-pack: end;
+    justify-content: flex-end;
+  }
+
+  .button {
+    min-width: auto !important;
+    margin: 0 !important;
+    padding: 5px 12px;
+    border-radius: 0;
+  }
+}
 
 .hidden {
   display: none;

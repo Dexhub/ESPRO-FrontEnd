@@ -20,4 +20,5 @@ export const apiUrl = {
   user: `${constants.API_URL}/user`,
   balance: `${constants.API_URL}/balance`,
   trade: `${constants.API_URL}/trade`,
+  portfolio: `${constants.API_URL}/portfolio`,
 }

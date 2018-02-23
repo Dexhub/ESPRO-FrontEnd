@@ -7,6 +7,7 @@ import { AppComponent } from './app.component';
 import { HomeComponent, UsersComponent } from './components';
 import { CommonService, AuthService } from './services';
 import { AppRoutingModule } from './app-routing.module';
+import { ChartsModule } from 'ng2-charts/ng2-charts';
 
 @NgModule({
   declarations: [
@@ -19,7 +20,8 @@ import { AppRoutingModule } from './app-routing.module';
     FormsModule,
     ReactiveFormsModule,
     HttpModule,
-    AppRoutingModule
+    AppRoutingModule,
+    ChartsModule
   ],
   providers: [CommonService, AuthService],
   bootstrap: [AppComponent]

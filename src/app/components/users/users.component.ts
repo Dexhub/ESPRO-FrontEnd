@@ -59,6 +59,7 @@ export interface AggregateAmount {
 export class UsersComponent {
   public form: FormGroup;
   public error:string = '';
+  public userIdError:string = '';
   public userId:number;
   public addUser: Boolean = false;
   public exchanges: Array<Exchange> = [];
@@ -67,6 +68,13 @@ export class UsersComponent {
   public tradesSync: { [key: string]: Boolean } = {};
   public trades:Array<TradeObj> = [];
   public aggregateAmount:Array<AggregateAmount> = [];
+  public portfolio:any = {};
+  public coinContributionPaginated: any = [];
+  public pageNumbers: any = [];
+  public temp = [{
+    data: [1,2,3,4,5,6,7,8,9,20],
+    label: 'portfolio'
+  }];
   constructor(public router: Router, public commonService: CommonService, private route: ActivatedRoute) {
     this.resetForm();
     this.commonService.getMethod(`${apiUrl.user}/exchanges`)
@@ -75,11 +83,18 @@ export class UsersComponent {
     });
     this.route.params.subscribe(params => {
       this.userId = params.id;
-      this.getTradesHistory();
-      this.getAggregationAmount();
-      this.commonService.getMethod(`${apiUrl.user}/${this.userId}/account`)
-      .then((data:{ status: Boolean, info: { userAccountInfo: Array<UserAccount> } }) => {
-        this.userAccounts = data.info.userAccountInfo;
+      this.commonService.postMethod({ username: this.userId }, `${apiUrl.user}/login`)
+      .then((userData: { success: Boolean, info: { user: { userId: number } } }) => {
+        this.userId = userData.info.user.userId;
+        this.commonService.getMethod(`${apiUrl.user}/${this.userId}/account`)
+        .then((data:{ status: Boolean, info: { userAccountInfo: Array<UserAccount> } }) => {
+          this.userAccounts = data.info.userAccountInfo;
+        });
+        this.getTradesHistory();
+        this.getAggregationAmount();
+        this.getPortFolio();
+      }).catch((error) => {
+        this.userIdError = error.errormessage;
       });
     });
   }
@@ -181,6 +196,41 @@ export class UsersComponent {
     this.commonService.getMethod(`${apiUrl.trade}/amount?userId=${this.userId}`)
     .then((res: { success:Boolean, info: { coinTotalAmount: Array<AggregateAmount> } }) => {
       this.aggregateAmount = res.info.coinTotalAmount;
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+  }
+
+  getPage(pageNum) {
+    this.coinContributionPaginated = [];
+    for (let i = pageNum * 10; i < (pageNum * 10) + 10; i += 1) {
+      if (this.portfolio.percentageContribution[i]) {
+        this.coinContributionPaginated.push(this.portfolio.percentageContribution[i]);
+      }
+    }
+  }
+
+  getPageCounts(records) {
+    this.pageNumbers = [];
+    for (let i = 0; i < Math.ceil((records) / 10); i += 1) {
+      this.pageNumbers.push(i);
+    }
+  }
+
+  getPortFolio() {
+    this.portfolio = { change1d: {}, percentageContribution: [], portfolioData: [] };
+    this.commonService.getMethod(`${apiUrl.portfolio}/fetch?userId=${this.userId}`)
+    .then((res:any) => {
+      this.portfolio = res.info;
+      let temp:any = { data: [{ data: [], label: 'portfolio' }], label: [] };
+      this.portfolio.portfolioData.forEach((obj) => {
+        temp.label.push(new Date(obj.createdAt).toLocaleString());
+        temp.data[0].data.push(obj.totalBalance);
+      });
+      this.portfolio.portfolioData = temp;
+      this.getPageCounts(this.portfolio.percentageContribution.length);
+      this.getPage(0);
     })
     .catch((error) => {
       console.log(error);
