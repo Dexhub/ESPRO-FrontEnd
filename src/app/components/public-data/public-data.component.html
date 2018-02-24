@@ -1,0 +1,158 @@
+<p style="color:red">{{coinError}}</p>
+<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 col-xl-12" >
+  <h5 class="heading">Coins</h5>
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 col-xl-12">
+    <div class="timeline-panel">
+      <div class="row">
+        <div class="col-sm-12">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Symbol</th>
+                <th>Rank</th>
+                <th>Exchange</th>
+                <th>Price(USD)</th>
+                <th>Price(BTC)</th>
+                <th>Volume(24H)</th>
+                <th>Market Cap</th>
+                <th>Available Supply</th>
+                <th>Total Supply</th>
+                <th>Change(1D)</th>
+                <th>Change(24H)</th>
+                <th>Change(1W)</th>
+                <th>Rate</th>
+                <th>Currency</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let coin of paginatedCoins; let i = index">
+                <tr>
+                  <td>{{coin.name}}</td>
+                  <td>{{coin.symbol}}</td>
+                  <td>{{coin.rank}}</td>
+                  <td>{{coin.exchange}}</td>
+                  <td>{{coin.price_usd}}</td>
+                  <td>{{coin.price_btc}}</td>
+                  <td>{{coin['24h_volume']}} {{coin.volume_currency}}</td>
+                  <td>{{coin.market_cap_usd}}</td>
+                  <td>{{coin.available_supply}}</td>
+                  <td>{{coin.total_supply}}</td>
+                  <td>{{coin.percent_change_1h}}</td>
+                  <td>{{coin.percent_change_24h}}</td>
+                  <td>{{coin.percent_change_7d}}</td>
+                  <td>{{coin.rate}}</td>
+                  <td>{{coin.currency}}</td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+          <div class="modal-footer">
+            <div class="btn-group-xs">
+              <button *ngFor="let page of pageNumbers"
+               (click)="getPage(page)"
+              type="button" class="btn btn-primary button">{{page + 1}}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p style="color:red">{{error}}</p>
+<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 col-xl-12" >
+  <h5 class="heading">Assets</h5>
+  <label>Coin : </label>
+  <input class="form-control" style="width:200px;display:inline" type="text" [(ngModel)]="assetPairInput"/>
+  <button (click)="getAssets()" type="button" class="btn btn-primary button">Find</button>
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 col-xl-12">
+    <div class="timeline-panel">
+      <div class="row">
+        <div class="col-sm-12">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Pair</th>
+                <th>Price(USD)</th>
+                <th>Volume(24H) (in USD)</th>
+                <th>Rate</th>
+                <th>Currency</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let asset of paginatedAssets; let i = index">
+                <tr>
+                  <td>{{asset.name}}</td>
+                  <td>{{asset.pair}}</td>
+                  <td>{{asset.price_usd}}</td>
+                  <td>{{asset['24h_volume_usd']}}</td>
+                  <td>{{asset.rate}}</td>
+                  <td>{{asset.currency}}</td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+          <div class="modal-footer">
+            <div class="btn-group-xs">
+              <button *ngFor="let page of assetPageNumbers"
+               (click)="getAssetPage(page)"
+              type="button" class="btn btn-primary button">{{page + 1}}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p style="color:red">{{exchangeCoinListError}}</p>
+<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 col-xl-12" >
+  <h5 class="heading">Exchange Coin List</h5>
+  <label>Coin : </label>
+  <select class="ui default button" style="width:200px;display:inline" [(ngModel)]="selectedExchange">
+    <option value="">select exchange</option>
+    <option *ngFor="let option of exchanges" value="{{option.exchangeName}}">{{option.exchangeName}}</option>
+  </select>
+  <button (click)="getExchangeCoinList()" type="button" class="btn btn-primary button">Find</button>
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 col-xl-12">
+    <div class="timeline-panel">
+      <div class="row">
+        <div class="col-sm-12">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Pair</th>
+                <th>Price(USD)</th>
+                <th>Volume(24H) (in USD)</th>
+                <th>Rate</th>
+                <th>Currency</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let asset of paginatedExchangeCoinList; let i = index">
+                <tr>
+                  <td>{{asset.name}}</td>
+                  <td>{{asset.pair}}</td>
+                  <td>{{asset.price_usd}}</td>
+                  <td>{{asset['24h_volume_usd']}}</td>
+                  <td>{{asset.rate}}</td>
+                  <td>{{asset.currency}}</td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+          <div class="modal-footer">
+            <div class="btn-group-xs">
+              <button *ngFor="let page of assetPageNumbers"
+               (click)="getExchangeCoinListPage(page)"
+              type="button" class="btn btn-primary button">{{page + 1}}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

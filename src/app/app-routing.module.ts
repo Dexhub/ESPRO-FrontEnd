@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
 import { AppComponent } from './app.component';
-import { UsersComponent, HomeComponent } from './components';
+import { UsersComponent, HomeComponent, PublicDataComponent } from './components';
 
 /**
 * Define sub routes
@@ -11,6 +11,10 @@ const routes: Routes = [
   { path: '', redirectTo: '/users', pathMatch: 'full' },
   {
     path: 'users', component: HomeComponent,
+    pathMatch: 'full',
+  },
+  {
+    path: 'public-data', component: PublicDataComponent,
     pathMatch: 'full',
   },
   {

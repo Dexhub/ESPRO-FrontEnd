@@ -4,7 +4,7 @@ import { HttpModule } from '@angular/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AppComponent } from './app.component';
-import { HomeComponent, UsersComponent } from './components';
+import { HomeComponent, UsersComponent, PublicDataComponent } from './components';
 import { CommonService, AuthService } from './services';
 import { AppRoutingModule } from './app-routing.module';
 import { ChartsModule } from 'ng2-charts/ng2-charts';
@@ -13,7 +13,8 @@ import { ChartsModule } from 'ng2-charts/ng2-charts';
   declarations: [
     AppComponent,
     HomeComponent,
-    UsersComponent
+    UsersComponent,
+    PublicDataComponent
   ],
   imports: [
     BrowserModule,

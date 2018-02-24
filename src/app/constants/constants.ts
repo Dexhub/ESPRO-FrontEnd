@@ -5,7 +5,7 @@ export const constants = {
   /**
   * API Host Url
   */
-  API_HOST: 'localhost',
+  API_HOST: '52.87.71.251',
   /**
   * API port
   */
@@ -13,7 +13,7 @@ export const constants = {
   /**
   * API Url
   */
-  API_URL: 'http://localhost:3010/api/v1'
+  API_URL: 'http://52.87.71.251:3010/api/v1'
 }
 
 export const apiUrl = {
@@ -21,4 +21,7 @@ export const apiUrl = {
   balance: `${constants.API_URL}/balance`,
   trade: `${constants.API_URL}/trade`,
   portfolio: `${constants.API_URL}/portfolio`,
+  coins: `${constants.API_URL}/coins`,
+  assetprice: `${constants.API_URL}/assetprice`,
+  exchangecoinlist: `${constants.API_URL}/exchangecoinlist`
 }
