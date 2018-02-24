@@ -8,6 +8,7 @@ import { HomeComponent, UsersComponent, PublicDataComponent } from './components
 import { CommonService, AuthService } from './services';
 import { AppRoutingModule } from './app-routing.module';
 import { ChartsModule } from 'ng2-charts/ng2-charts';
+import { DataTablesModule } from 'angular-datatables';
 
 @NgModule({
   declarations: [
@@ -22,7 +23,8 @@ import { ChartsModule } from 'ng2-charts/ng2-charts';
     ReactiveFormsModule,
     HttpModule,
     AppRoutingModule,
-    ChartsModule
+    ChartsModule,
+    DataTablesModule
   ],
   providers: [CommonService, AuthService],
   bootstrap: [AppComponent]

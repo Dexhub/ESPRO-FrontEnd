@@ -151,7 +151,7 @@
           </ng-container>
         </tbody>
       </table>
-      <div class="modal-footer">
+      <div class="modal-footer" *ngIf="pageNumbers.length > 1">
         <div class="btn-group-xs">
           <button *ngFor="let page of pageNumbers"
            (click)="getPage(page)"

@@ -3,7 +3,7 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonService } from '../../services';
 import { apiUrl } from '../../constants/constants';
-
+import { DataTablesModule } from 'angular-datatables';
 
 @Component({
   selector: 'public-data-app',
@@ -29,6 +29,8 @@ export class PublicDataComponent {
   public exchangeCoinListPageNumbers: any = [];
   public paginatedExchangeCoinList: any = [];
 
+  public dtOptions: DataTables.Settings = {};
+
   constructor(public router: Router, public commonService: CommonService) {
     this.commonService.getMethod(`${apiUrl.user}/exchanges`)
     .then((data:any) => {
@@ -37,6 +39,11 @@ export class PublicDataComponent {
     });
     this.getCoins();
     this.getAssets();
+    this.dtOptions = {
+       paging: true,
+       pagingType: 'simple',
+       autoWidth: true
+     };
   }
 
   getCoins() {
