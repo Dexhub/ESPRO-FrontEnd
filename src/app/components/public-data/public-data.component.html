@@ -15,7 +15,7 @@
                 <th>Price(USD)</th>
                 <th>Price(BTC)</th>
                 <th>Volume(24H)</th>
-                <th>Market Cap</th>
+                <th>Market Cap(USD)</th>
                 <th>Available Supply</th>
                 <th>Total Supply</th>
                 <th>Change(1D)</th>
@@ -34,26 +34,19 @@
                   <td>{{coin.exchange}}</td>
                   <td>{{coin.price_usd}}</td>
                   <td>{{coin.price_btc}}</td>
-                  <td>{{coin['24h_volume']}} {{coin.volume_currency}}</td>
-                  <td>{{coin.market_cap_usd}}</td>
-                  <td>{{coin.available_supply}}</td>
-                  <td>{{coin.total_supply}}</td>
-                  <td>{{coin.percent_change_1h}}</td>
-                  <td>{{coin.percent_change_24h}}</td>
-                  <td>{{coin.percent_change_7d}}</td>
+                  <td>{{coin['24h_volume']}}</td>
+                  <td>{{coin.market_cap_usd || 0}}</td>
+                  <td>{{coin.available_supply || 0}}</td>
+                  <td>{{coin.total_supply || 0}}</td>
+                  <td>{{coin.percent_change_1h || 0}}</td>
+                  <td>{{coin.percent_change_24h || 0}}</td>
+                  <td>{{coin.percent_change_7d || 0}}</td>
                   <td>{{coin.rate}}</td>
                   <td>{{coin.currency}}</td>
                 </tr>
               </ng-container>
             </tbody>
           </table>
-          <!-- <div class="modal-footer" *ngIf="pageNumbers.length > 1">
-            <div class="btn-group-xs">
-              <button *ngFor="let page of pageNumbers"
-               (click)="getPage(page)"
-              type="button" class="btn btn-primary button">{{page + 1}}</button>
-            </div>
-          </div> -->
         </div>
       </div>
     </div>
@@ -74,6 +67,7 @@
             <thead>
               <tr>
                 <th>Name</th>
+                <th>Exchange</th>
                 <th>Pair</th>
                 <th>Price(USD)</th>
                 <th>Volume(24H) (in USD)</th>
@@ -85,6 +79,7 @@
               <ng-container *ngFor="let asset of assets; let i = index">
                 <tr>
                   <td>{{asset.name}}</td>
+                  <td>{{asset.exchange}}</td>
                   <td>{{asset.pair}}</td>
                   <td>{{asset.price_usd}}</td>
                   <td>{{asset['24h_volume_usd']}}</td>
@@ -94,13 +89,6 @@
               </ng-container>
             </tbody>
           </table>
-          <!-- <div class="modal-footer" *ngIf="assetPageNumbers.length > 1">
-            <div class="btn-group-xs">
-              <button *ngFor="let page of assetPageNumbers"
-               (click)="getAssetPage(page)"
-              type="button" class="btn btn-primary button">{{page + 1}}</button>
-            </div>
-          </div> -->
         </div>
       </div>
     </div>
@@ -144,13 +132,6 @@
               </ng-container>
             </tbody>
           </table>
-          <!-- <div class="modal-footer" *ngIf="exchangeCoinListPageNumbers.length > 1">
-            <div class="btn-group-xs">
-              <button *ngFor="let page of exchangeCoinListPageNumbers"
-               (click)="getExchangeCoinListPage(page)"
-              type="button" class="btn btn-primary button">{{page + 1}}</button>
-            </div>
-          </div> -->
         </div>
       </div>
     </div>

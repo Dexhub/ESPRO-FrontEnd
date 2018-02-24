@@ -13,12 +13,8 @@ import { DataTablesModule } from 'angular-datatables';
 export class PublicDataComponent {
   public coinError:string = '';
   public coins: any = [];
-  public paginatedCoins: any = [];
-  public pageNumbers: any = [];
 
   public error:string = '';
-  public assetPageNumbers: any = [];
-  public paginatedAssets: any = [];
   public assets: any = [];
   public assetPairInput: string = 'BTC';
 
@@ -26,8 +22,6 @@ export class PublicDataComponent {
   public exchanges: any = [];
   public exchangeCoinListError:string = '';
   public exchangeCoinList: any = [];
-  public exchangeCoinListPageNumbers: any = [];
-  public paginatedExchangeCoinList: any = [];
 
   public dtOptions: DataTables.Settings = {};
 
@@ -49,13 +43,10 @@ export class PublicDataComponent {
   getCoins() {
     this.coinError = '';
     this.coins = [];
-    this.paginatedCoins = [];
     this.commonService.getMethod(`${apiUrl.coins}?limit=5000`)
     .then((data:any) => {
       if (data.status) {
         this.coins = data.info;
-        this.getPageCounts(this.coins.length);
-        this.getPage(0);
       } else {
         this.coinError = data.errormessage;
       }
@@ -63,31 +54,14 @@ export class PublicDataComponent {
       this.coinError = error.errormessage;
     });
   }
-  getPage(pageNum) {
-    this.paginatedCoins = [];
-    for (let i = pageNum * 50; i < (pageNum * 50) + 50; i += 1) {
-      if (this.coins[i]) {
-        this.paginatedCoins.push(this.coins[i]);
-      }
-    }
-  }
-  getPageCounts(records) {
-    this.pageNumbers = [];
-    for (let i = 0; i < Math.ceil((records) / 50); i += 1) {
-      this.pageNumbers.push(i);
-    }
-  }
 
   getAssets() {
     this.error = '';
     this.assets = [];
-    this.paginatedAssets = [];
     this.commonService.getMethod(`${apiUrl.assetprice}?limit=5000&pair=${this.assetPairInput}`)
     .then((data:any) => {
       if (data.status) {
         this.assets = data.info;
-        this.getAssetPageCounts(this.assets.length);
-        this.getAssetPage(0);
       } else {
         this.error = data.errormessage;
       }
@@ -95,50 +69,19 @@ export class PublicDataComponent {
       this.error = error.errormessage;
     });
   }
-  getAssetPage(pageNum) {
-    this.paginatedAssets = [];
-    for (let i = pageNum * 50; i < (pageNum * 50) + 50; i += 1) {
-      if (this.assets[i]) {
-        this.paginatedAssets.push(this.assets[i]);
-      }
-    }
-  }
-  getAssetPageCounts(records) {
-    this.assetPageNumbers = [];
-    for (let i = 0; i < Math.ceil((records) / 50); i += 1) {
-      this.assetPageNumbers.push(i);
-    }
-  }
 
   getExchangeCoinList() {
     this.exchangeCoinListError = '';
     this.exchangeCoinList = [];
-    this.paginatedExchangeCoinList = [];
     this.commonService.getMethod(`${apiUrl.exchangecoinlist}?limit=5000&exchange=${this.selectedExchange}`)
     .then((data:any) => {
       if (data.status) {
         this.exchangeCoinList = data.info;
-        this.getExchangeCoinListPageCounts(this.exchangeCoinList.length);
-        this.getExchangeCoinListPage(0);
       } else {
         this.exchangeCoinListError = data.errormessage;
       }
     }).catch((error) => {
       this.exchangeCoinListError = error.errormessage;
     });
-  }
-  getExchangeCoinListPage(pageNum) {
-    this.paginatedExchangeCoinList = [];
-    for (let i = pageNum * 50; i < (pageNum * 50) + 50; i += 1) {
-      if (this.exchangeCoinList[i]) {
-        this.paginatedExchangeCoinList.push(this.exchangeCoinList[i]);
-      }
-    }
-  }
-  getExchangeCoinListPageCounts(records) {
-    this.exchangeCoinListPageNumbers = [];
-    for (let i = 0; i < Math.ceil((records) / 50); i += 1) {
-      this.exchangeCoinListPageNumbers.push(i);
-    }
   }
 }

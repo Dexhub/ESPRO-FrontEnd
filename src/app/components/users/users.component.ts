@@ -3,6 +3,7 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CommonService } from '../../services';
 import { apiUrl } from '../../constants/constants';
+import { DataTablesModule } from 'angular-datatables';
 
 export interface UserInfoData {
   userId: number;
@@ -75,6 +76,11 @@ export class UsersComponent {
     data: [1,2,3,4,5,6,7,8,9,20],
     label: 'portfolio'
   }];
+  public dtOptions: DataTables.Settings = {
+     paging: true,
+     pagingType: 'simple',
+     autoWidth: true
+   };
   constructor(public router: Router, public commonService: CommonService, private route: ActivatedRoute) {
     this.resetForm();
     this.commonService.getMethod(`${apiUrl.user}/exchanges`)
@@ -202,22 +208,6 @@ export class UsersComponent {
     });
   }
 
-  getPage(pageNum) {
-    this.coinContributionPaginated = [];
-    for (let i = pageNum * 10; i < (pageNum * 10) + 10; i += 1) {
-      if (this.portfolio.percentageContribution[i]) {
-        this.coinContributionPaginated.push(this.portfolio.percentageContribution[i]);
-      }
-    }
-  }
-
-  getPageCounts(records) {
-    this.pageNumbers = [];
-    for (let i = 0; i < Math.ceil((records) / 10); i += 1) {
-      this.pageNumbers.push(i);
-    }
-  }
-
   getPortFolio() {
     this.portfolio = { change1d: {}, percentageContribution: [], portfolioData: [] };
     this.commonService.getMethod(`${apiUrl.portfolio}/fetch?userId=${this.userId}`)
@@ -229,8 +219,6 @@ export class UsersComponent {
         temp.data[0].data.push(obj.totalBalance);
       });
       this.portfolio.portfolioData = temp;
-      this.getPageCounts(this.portfolio.percentageContribution.length);
-      this.getPage(0);
     })
     .catch((error) => {
       console.log(error);
