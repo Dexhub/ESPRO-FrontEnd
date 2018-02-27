@@ -31,6 +31,7 @@
     "ng2-charts": "1.6.0",
     "path": "0.12.7",
     "rxjs": "^5.1.0",
+    "socket.io-client": "^2.0.4",
     "uuid": "3.1.0",
     "volleyball": "1.4.1",
     "zone.js": "^0.8.4"
@@ -38,6 +39,7 @@
   "devDependencies": {
     "@angular/cli": "1.0.0",
     "@angular/compiler-cli": "^4.0.0",
+    "@types/socket.io-client": "^1.4.32",
     "@types/datatables.net": "1.10.8",
     "@types/jasmine": "2.5.38",
     "@types/jquery": "2.0.47",

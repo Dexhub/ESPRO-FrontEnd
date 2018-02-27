@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { CommonService } from '../../services';
+import { CommonService, SocketService } from '../../services';
 import { apiUrl } from '../../constants/constants';
 
 export interface UserData {
@@ -27,10 +27,13 @@ export class HomeComponent {
   public addUser: Boolean = false;
   public users: Array<UserData> = [];
 
-  constructor(public router: Router, public commonService: CommonService) {
+  constructor(public router: Router, public commonService: CommonService, public socketService: SocketService) {
     this.commonService.getMethod(apiUrl.user)
     .then((users:UserDataResponse) => {
       this.users = users.info.users;
     });
+  }
+  ngOnInit() {
+    this.socketService.disconnect();
   }
 }
