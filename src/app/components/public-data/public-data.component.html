@@ -30,23 +30,23 @@
               </tr>
             </thead>
             <tbody>
-              <ng-container *ngFor="let coin of coins; let i = index">
+              <ng-container *ngFor="let coinSymbol of uiCoins.keys; let i = index">
                 <tr>
-                  <td>{{coin.name}}</td>
-                  <td>{{coin.symbol}}</td>
-                  <td>{{coin.rank}}</td>
-                  <td>{{coin.exchange}}</td>
-                  <td>{{coin.price_usd}}</td>
-                  <td>{{coin.price_btc}}</td>
-                  <td>{{coin['24h_volume']}}</td>
-                  <td>{{coin.market_cap_usd || 0}}</td>
-                  <td>{{coin.available_supply || 0}}</td>
-                  <td>{{coin.total_supply || 0}}</td>
-                  <td>{{coin.percent_change_1h || 0}}</td>
-                  <td>{{coin.percent_change_24h || 0}}</td>
-                  <td>{{coin.percent_change_7d || 0}}</td>
-                  <td>{{coin.rate}}</td>
-                  <td>{{coin.currency}}</td>
+                  <td>{{uiCoins.data[coinSymbol].name}}</td>
+                  <td>{{uiCoins.data[coinSymbol].symbol}}</td>
+                  <td>{{uiCoins.data[coinSymbol].rank}}</td>
+                  <td>{{uiCoins.data[coinSymbol].exchange}}</td>
+                  <td class="{{uiCoins.data[coinSymbol].priceClass}}">{{numberFormat(uiCoins.data[coinSymbol].price_usd)}}</td>
+                  <td>{{numberFormat(uiCoins.data[coinSymbol].price_btc)}}</td>
+                  <td>{{numberFormat(uiCoins.data[coinSymbol]['24h_volume'])}}</td>
+                  <td>{{numberFormat(uiCoins.data[coinSymbol].market_cap_usd) || 0}}</td>
+                  <td>{{numberFormat(uiCoins.data[coinSymbol].available_supply) || 0}}</td>
+                  <td>{{numberFormat(uiCoins.data[coinSymbol].total_supply) || 0}}</td>
+                  <td>{{numberFormat(uiCoins.data[coinSymbol].percent_change_1h) || 0}}</td>
+                  <td>{{numberFormat(uiCoins.data[coinSymbol].percent_change_24h) || 0}}</td>
+                  <td>{{numberFormat(uiCoins.data[coinSymbol].percent_change_7d) || 0}}</td>
+                  <td>{{numberFormat(uiCoins.data[coinSymbol].rate)}}</td>
+                  <td>{{uiCoins.data[coinSymbol].currency}}</td>
                 </tr>
               </ng-container>
             </tbody>

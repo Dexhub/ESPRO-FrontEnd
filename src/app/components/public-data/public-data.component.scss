@@ -21,6 +21,13 @@ button:disabled {
   cursor: not-allowed !important;
 }
 
+.increase {
+  background-color: rgb(50, 175, 41);
+}
+.decrease {
+  background-color: #ea0c16;
+}
+
 .btn-group-xs {
   width: 100%;
   text-align: center;

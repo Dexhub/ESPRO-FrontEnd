@@ -15,6 +15,7 @@ import * as _ from 'lodash';
 export class PublicDataComponent {
   public coinError:string = '';
   public coins: any = [];
+  public uiCoins: any = { data: {}, keys: [] };
 
   public error:string = '';
   public assets: any = [];
@@ -57,18 +58,13 @@ export class PublicDataComponent {
     */
     this.socketData.subscribe((msg: any) => {
       if (msg.type === 'coinChange') {
-        const coinIndex = _.findIndex(this.coins, (coin) => coin.symbol === msg.data.symbol);
-        if (coinIndex !== -1) {
-          this.coins[coinIndex].available_supply = msg.data.available_supply;
-          this.coins[coinIndex].currency = msg.data.currency;
-          this.coins[coinIndex].market_cap_usd = msg.data.market_cap_usd;
-          this.coins[coinIndex].percent_change_1h = msg.data.percent_change_1h;
-          this.coins[coinIndex].percent_change_7d = msg.data.percent_change_7d;
-          this.coins[coinIndex].percent_change_24h = msg.data.percent_change_24h;
-          this.coins[coinIndex].price_btc = msg.data.price_btc;
-          this.coins[coinIndex].price_usd = msg.data.price_usd;
-          this.coins[coinIndex].rate = msg.data.rate;
-          console.log(msg.data.symbol, msg.data.price_usd)
+        const coinTicker = msg.data.symbol;
+        if (this.uiCoins.data[coinTicker] !== undefined) {
+          this.uiCoins.data[coinTicker].priceClass = (this.uiCoins.data[coinTicker].price_usd > msg.data.price_usd) ? 'decrease' :  ((this.uiCoins.data[coinTicker].price_usd < msg.data.price_usd)) ? 'increase' : 'neutral';
+          this.uiCoins.data[coinTicker].market_cap_usd = msg.data.market_cap_usd;
+          this.uiCoins.data[coinTicker].price_btc = msg.data.price_btc;
+          this.uiCoins.data[coinTicker].price_usd = msg.data.price_usd;
+          console.log(coinTicker, msg.data);
         }
       }
     });
@@ -81,6 +77,11 @@ export class PublicDataComponent {
     .then((data:any) => {
       if (data.status) {
         this.coins = data.info;
+        this.coins.forEach((coin) => {
+          this.uiCoins.data[coin.symbol] = coin;
+          this.uiCoins.data[coin.symbol].priceClass = 'neutral';
+          this.uiCoins.keys.push(coin.symbol);
+        });
       } else {
         this.coinError = data.errormessage;
       }
@@ -88,7 +89,13 @@ export class PublicDataComponent {
       this.coinError = error.errormessage;
     });
   }
-
+  numberFormat(value:number) {
+    if (value % 1 === 0) {
+      return value;
+    } else {
+      return value.toFixed(4);
+    }
+  }
   getAssets() {
     this.error = '';
     this.assets = [];

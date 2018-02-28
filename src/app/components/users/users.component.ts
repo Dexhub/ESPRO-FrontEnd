@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { CommonService } from '../../services';
+import { CommonService, SocketService } from '../../services';
 import { apiUrl } from '../../constants/constants';
 import { DataTablesModule } from 'angular-datatables';
+import { Observable, Subject } from 'rxjs/Rx';
 
 export interface UserInfoData {
   userId: number;
@@ -76,12 +77,13 @@ export class UsersComponent {
     data: [1,2,3,4,5,6,7,8,9,20],
     label: 'portfolio'
   }];
+  public socketData: any = {};
   public dtOptions: DataTables.Settings = {
      paging: true,
      pagingType: 'simple',
      autoWidth: true
    };
-  constructor(public router: Router, public commonService: CommonService, private route: ActivatedRoute) {
+  constructor(public router: Router, public commonService: CommonService, private route: ActivatedRoute, public socketService: SocketService) {
     this.resetForm();
     this.commonService.getMethod(`${apiUrl.user}/exchanges`)
     .then((data:{ status: Boolean, info: { exchanges: Array<Exchange> } }) => {
@@ -102,6 +104,26 @@ export class UsersComponent {
       }).catch((error) => {
         this.userIdError = error.errormessage;
       });
+    });
+  }
+
+  ngOnInit() {
+    /**
+    * connection with server by socket connection
+    */
+    this.socketService.connect();
+    this.socketData = <Subject<MessageEvent>>this.socketService.getMessage()
+      .map((response: MessageEvent): MessageEvent => {
+        return response;
+      });
+
+    /**
+    * get socketData form server using socket connection
+    */
+    this.socketData.subscribe((msg: any) => {
+      if (msg.type === 'coinChange') {
+        console.log(msg);
+      }
     });
   }
 
