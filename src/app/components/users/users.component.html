@@ -91,9 +91,9 @@
               <td>{{trade.exchangeName}}</td>
               <td>{{trade.symbolPair}}</td>
               <td>{{trade.tradeType}}</td>
-              <td>{{trade.tradePrice}}</td>
-              <td>{{trade.tradeSize}}</td>
-              <td>{{trade.tradeFee}}</td>
+              <td>{{numberFormat(trade.tradePrice)}}</td>
+              <td>{{numberFormat(trade.tradeSize)}}</td>
+              <td>{{numberFormat(trade.tradeFee)}}</td>
             </tr>
           </ng-container>
         </tbody>
@@ -113,14 +113,14 @@
           </tr>
         </thead>
         <tbody>
-          <ng-container *ngFor="let obj of aggregateAmount; let i = index">
+          <ng-container *ngFor="let key of aggregateAmountObj.keys; let i = index">
             <tr>
-              <td>{{obj.coin}}</td>
-              <td>{{numberFormat(obj.amount)}}</td>
-              <td>{{numberFormat(obj.priceInUsd)}}</td>
-              <td>{{numberFormat(obj.change24Hour)}}</td>
-              <td>{{numberFormat(obj.value) + "(" + numberFormat(obj.valuePercentage) +")"}}</td>
-              <td>{{numberFormat(obj.ROI)}}</td>
+              <td>{{aggregateAmountObj.data[key].coin}}</td>
+              <td>{{numberFormat(aggregateAmountObj.data[key].amount)}}</td>
+              <td class="{{aggregateAmountObj.data[key].priceClass}}">{{numberFormat(aggregateAmountObj.data[key].priceInUsd)}}</td>
+              <td>{{numberFormat(aggregateAmountObj.data[key].change24Hour)}}</td>
+              <td class="{{aggregateAmountObj.data[key].priceClass}}">{{numberFormat(aggregateAmountObj.data[key].value) + "(" + numberFormat(aggregateAmountObj.data[key].valuePercentage) +")"}}</td>
+              <td class="{{aggregateAmountObj.data[key].priceClass}}">{{numberFormat(aggregateAmountObj.data[key].ROI)}}</td>
             </tr>
           </ng-container>
         </tbody>
@@ -133,7 +133,7 @@
   <div class="col-lg-12 col-md-12" style="display:flex">
     <div class="col-lg-6 col-md-6">
       <h5 class="heading">Coins Contribution in overall portfolio</h5>
-      <table class="table" *ngIf="portfolio.percentageContribution[0]" datatable="ng" [dtOptions]="dtOptions">
+      <table class="table" *ngIf="portfolio.percentageContributionObj && portfolio.percentageContributionObj.keys[0]" datatable="ng" [dtOptions]="dtOptions">
         <thead>
           <tr>
             <th>Coin ticker</th>
@@ -144,13 +144,13 @@
           </tr>
         </thead>
         <tbody>
-          <ng-container *ngFor="let coinContribution of portfolio.percentageContribution; let i = index">
+          <ng-container *ngFor="let key of portfolio.percentageContributionObj.keys; let i = index">
             <tr>
-              <td>{{coinContribution.coinTicker}}</td>
-              <td>{{coinContribution.totalUnits}}</td>
-              <td>{{coinContribution.priceOfOneUnit}}</td>
-              <td>{{coinContribution.totalBalanceInUsd}}</td>
-              <td>{{coinContribution.percentage}}</td>
+              <td>{{portfolio.percentageContributionObj.data[key].coinTicker}}</td>
+              <td>{{numberFormat(portfolio.percentageContributionObj.data[key].totalUnits)}}</td>
+              <td class="{{portfolio.percentageContributionObj.data[key].priceClass}}">{{numberFormat(portfolio.percentageContributionObj.data[key].priceOfOneUnit)}}</td>
+              <td class="{{portfolio.percentageContributionObj.data[key].priceClass}}">{{numberFormat(portfolio.percentageContributionObj.data[key].totalBalanceInUsd)}}</td>
+              <td class="{{portfolio.percentageContributionObj.data[key].priceClass}}">{{portfolio.percentageContributionObj.data[key].percentage}}</td>
             </tr>
           </ng-container>
         </tbody>

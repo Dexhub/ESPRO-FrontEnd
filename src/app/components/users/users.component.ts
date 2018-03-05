@@ -70,13 +70,9 @@ export class UsersComponent {
   public tradesSync: { [key: string]: Boolean } = {};
   public trades:Array<TradeObj> = [];
   public aggregateAmount:Array<AggregateAmount> = [];
+  public aggregateAmountObj:any = { data: {}, keys: [] };
   public portfolio:any = {};
-  public coinContributionPaginated: any = [];
   public pageNumbers: any = [];
-  public temp = [{
-    data: [1,2,3,4,5,6,7,8,9,20],
-    label: 'portfolio'
-  }];
   public socketData: any = {};
   public dtOptions: DataTables.Settings = {
      paging: true,
@@ -107,25 +103,99 @@ export class UsersComponent {
     });
   }
 
-  ngOnInit() {
-    /**
-    * connection with server by socket connection
-    */
-    this.socketService.connect();
-    this.socketData = <Subject<MessageEvent>>this.socketService.getMessage()
-      .map((response: MessageEvent): MessageEvent => {
-        return response;
-      });
+    ngOnInit() {
+      /**
+      * connection with server by socket connection
+      */
+      this.socketService.connect();
+      this.socketData = <Subject<MessageEvent>>this.socketService.getMessage()
+        .map((response: MessageEvent): MessageEvent => {
+          return response;
+        });
 
-    /**
-    * get socketData form server using socket connection
-    */
-    this.socketData.subscribe((msg: any) => {
-      if (msg.type === 'coinChange') {
-        console.log(msg);
-      }
-    });
-  }
+      /**
+      * get socketData form server using socket connection
+      */
+      this.socketData.subscribe((msg: any) => {
+        if (msg.type === 'coinChange') {
+          let coinTicker = msg.data.symbol;
+          if (this.aggregateAmountObj.data[coinTicker]) {
+            this.aggregateAmountObj.data[coinTicker].priceClass = (this.aggregateAmountObj.data[coinTicker].priceInUsd > msg.data.price_usd) ? 'decrease' :  ((this.aggregateAmountObj.data[coinTicker].priceInUsd < msg.data.price_usd)) ? 'increase' : 'neutral';
+            this.aggregateAmountObj.data[coinTicker].priceInUsd = msg.data.price_usd;
+            this.aggregateAmountObj.data[coinTicker].value = this.aggregateAmountObj.data[coinTicker].amount * msg.data.price_usd;
+
+            let totalAmount = 0;
+            this.aggregateAmountObj.keys.forEach((key) => {
+              totalAmount += this.aggregateAmountObj.data[key].value;
+            });
+
+            this.aggregateAmountObj.keys.forEach((key) => {
+              this.aggregateAmountObj.data[key].valuePercentage = (this.aggregateAmountObj.data[key].value * 100) / totalAmount;
+              this.aggregateAmountObj.data[key].ROI = ((this.aggregateAmountObj.data[key].value - this.aggregateAmountObj.data[key].priceInUsdTradeTime) / this.aggregateAmountObj.data[key].priceInUsdTradeTime) * 100;
+              if (this.aggregateAmountObj.data[key].amount < 0) {
+                this.aggregateAmountObj.data[key].ROI = -this.aggregateAmountObj.data[key].ROI;
+              }
+            });
+          }
+
+          if (this.portfolio.percentageContributionObj && this.portfolio.percentageContributionObj.data[coinTicker]) {
+            this.portfolio.percentageContributionObj.data[coinTicker].priceClass = (this.portfolio.percentageContributionObj.data[coinTicker].priceOfOneUnit > msg.data.price_usd) ? 'decrease' :  ((this.portfolio.percentageContributionObj.data[coinTicker].priceOfOneUnit < msg.data.price_usd)) ? 'increase' : 'neutral';
+            this.portfolio.percentageContributionObj.data[coinTicker].priceOfOneUnit = msg.data.price_usd;
+            let totalAmount = 0;
+            this.portfolio.percentageContributionObj.keys.forEach((key) => {
+              totalAmount += this.portfolio.percentageContributionObj.data[key].totalBalanceInUsd;
+            });
+
+            if (totalAmount !== 0 && totalAmount !== null && !isNaN(totalAmount) && totalAmount !== Infinity) {
+              this.portfolio.percentageContributionObj.keys.forEach((key) => {
+                this.portfolio.percentageContributionObj.data[key].percentage = (this.portfolio.percentageContributionObj.data[key].totalBalanceInUsd * 100) / totalAmount;
+              });
+            }
+          }
+        }
+      });
+    }
+
+    getPortFolio() {
+      this.portfolio = { change1d: {}, percentageContribution: [], portfolioData: [], percentageContributionObj: { data: {}, keys: [] } };
+      this.commonService.getMethod(`${apiUrl.portfolio}/fetch?userId=${this.userId}`)
+      .then((res:any) => {
+        this.portfolio = res.info;
+        this.portfolio.percentageContributionObj = { data: {}, keys: [] };
+        let temp:any = { data: [{ data: [], label: 'portfolio' }], label: [] };
+        this.portfolio.portfolioData.forEach((obj) => {
+          temp.label.push(new Date(obj.createdAt).toLocaleString());
+          temp.data[0].data.push(obj.totalBalance);
+        });
+        this.portfolio.portfolioData = temp;
+        this.portfolio.percentageContribution.forEach((obj) => {
+          this.portfolio.percentageContributionObj.data[obj.coinTicker] = obj;
+          this.portfolio.percentageContributionObj.data[obj.coinTicker].priceClass = 'neutral';
+          this.portfolio.percentageContributionObj.keys.push(obj.coinTicker);
+        });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    }
+
+    getAggregationAmount() {
+      this.aggregateAmount = [];
+      this.aggregateAmountObj = { data: {}, keys: [] };
+      this.commonService.getMethod(`${apiUrl.trade}/amount?userId=${this.userId}`)
+      .then((res: { success:Boolean, info: { coinTotalAmount: Array<AggregateAmount> } }) => {
+        this.aggregateAmount = res.info.coinTotalAmount;
+        this.aggregateAmount.forEach((obj) => {
+          this.aggregateAmountObj.data[obj.coin] = obj;
+          this.aggregateAmountObj.data[obj.coin].priceClass = 'neutral';
+          this.aggregateAmountObj.keys.push(obj.coin);
+        });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    }
+
 
   resetForm() {
     this.form = new FormGroup({
@@ -213,34 +283,6 @@ export class UsersComponent {
     this.commonService.getMethod(`${apiUrl.trade}/fetch?userId=${this.userId}`)
     .then((res: { success:Boolean, info: { trades: Array<TradeObj> } }) => {
       this.trades = res.info.trades;
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-  }
-
-  getAggregationAmount() {
-    this.aggregateAmount = [];
-    this.commonService.getMethod(`${apiUrl.trade}/amount?userId=${this.userId}`)
-    .then((res: { success:Boolean, info: { coinTotalAmount: Array<AggregateAmount> } }) => {
-      this.aggregateAmount = res.info.coinTotalAmount;
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-  }
-
-  getPortFolio() {
-    this.portfolio = { change1d: {}, percentageContribution: [], portfolioData: [] };
-    this.commonService.getMethod(`${apiUrl.portfolio}/fetch?userId=${this.userId}`)
-    .then((res:any) => {
-      this.portfolio = res.info;
-      let temp:any = { data: [{ data: [], label: 'portfolio' }], label: [] };
-      this.portfolio.portfolioData.forEach((obj) => {
-        temp.label.push(new Date(obj.createdAt).toLocaleString());
-        temp.data[0].data.push(obj.totalBalance);
-      });
-      this.portfolio.portfolioData = temp;
     })
     .catch((error) => {
       console.log(error);

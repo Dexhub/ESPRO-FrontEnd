@@ -28,7 +28,7 @@ const routes: Routes = [
   /**
   * for every request, other than the defined routes, redirect them to not-found page
   */
-  { path: '**', redirectTo: '/not-found' },
+  { path: '**', redirectTo: 'not-found' },
 ];
 
 /**

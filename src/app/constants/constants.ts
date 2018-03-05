@@ -13,11 +13,11 @@ export const constants = {
   /**
   * API Url
   */
-  API_URL: 'http://localhost:3010/api/v1',
+  API_URL: 'http://52.87.71.251:3010/api/v1',
   /**
   * SOCKET Url
   */
-  SOCKET_URL: 'http://localhost:3010'
+  SOCKET_URL: 'http://52.87.71.251:3000'
 }
 
 export const apiUrl = {

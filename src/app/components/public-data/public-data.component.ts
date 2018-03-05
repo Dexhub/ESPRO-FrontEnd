@@ -27,6 +27,16 @@ export class PublicDataComponent {
   public exchangeCoinList: any = [];
   public socketData: any = {};
   public dtOptions: DataTables.Settings = {};
+  public page:number = 0;
+  public currentSort = 'rank';
+  public currentOrder = 'asc';
+  public sort:any = {
+    'rank': 'asc',
+    'priceInUsd': 'asc',
+    'volume24Hour': 'asc',
+    'marketCap': 'asc',
+  };
+  public pageNumbers:any = [];
 
   constructor(public router: Router, public commonService: CommonService, public socketService: SocketService) {
     this.commonService.getMethod(`${apiUrl.user}/exchanges`)
@@ -70,12 +80,18 @@ export class PublicDataComponent {
     });
   }
 
-  getCoins() {
+  getCoins(sortKey = 'rank', sortOrder = 'asc', pageNum = 0) {
+    this.currentSort = sortKey;
+    this.currentOrder = sortOrder;
+    this.sort[sortKey] = sortOrder;
+    this.page = pageNum;
     this.coinError = '';
     this.coins = [];
-    this.commonService.getMethod(`${apiUrl.coins}?limit=5000`)
+    this.uiCoins = { data: {}, keys: [] };
+    this.commonService.getMethod(`${apiUrl.coins}?limit=${this.socketService.pageSize}&page=${this.page}&sort=${sortKey}&sortId=${sortOrder}&clientId=${this.socketService.clientId}`)
     .then((data:any) => {
       if (data.status) {
+        this.getPageNumbers(data.pagination.total);
         this.coins = data.info;
         this.coins.forEach((coin) => {
           this.uiCoins.data[coin.symbol] = coin;
@@ -89,6 +105,15 @@ export class PublicDataComponent {
       this.coinError = error.errormessage;
     });
   }
+
+  getPageNumbers(count) {
+    this.pageNumbers = [];
+    let pageSize = this.socketService.pageSize;
+    for (let i = 0; i < Math.ceil(count / pageSize); i++) {
+        this.pageNumbers.push(i);
+    }
+  }
+
   numberFormat(value:number) {
     if (value % 1 === 0) {
       return value;

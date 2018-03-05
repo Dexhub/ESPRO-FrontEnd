@@ -9,17 +9,18 @@
     <div class="timeline-panel">
       <div class="row">
         <div class="col-sm-12" *ngIf="coins[0]">
-          <table class="table row-border hover" datatable="ng" [dtOptions]="dtOptions">
+          <!-- <table class="table row-border hover" datatable="ng" [dtOptions]="dtOptions"> -->
+          <table class="table row-border hover">
             <thead>
               <tr>
                 <th>Name</th>
                 <th>Symbol</th>
-                <th>Rank</th>
+                <th style="cursor:pointer" (click)="getCoins('rank', (sort['rank'] === 'asc') ? 'desc' : 'asc', page)"><i class="fa fa-sort"></i> Rank</th>
                 <th>Exchange</th>
-                <th>Price(USD)</th>
+                <th style="cursor:pointer" (click)="getCoins('priceInUsd', (sort['priceInUsd'] === 'asc') ? 'desc' : 'asc', page)"><i class="fa fa-sort"></i> Price(USD)</th>
                 <th>Price(BTC)</th>
-                <th>Volume(24H)</th>
-                <th>Market Cap(USD)</th>
+                <th style="cursor:pointer" (click)="getCoins('volume24Hour', (sort['volume24Hour'] === 'asc') ? 'desc' : 'asc', page)"><i class="fa fa-sort"></i> Volume(24H)</th>
+                <th style="cursor:pointer" (click)="getCoins('marketCap', (sort['marketCap'] === 'asc') ? 'desc' : 'asc', page)"><i class="fa fa-sort"></i> Market Cap(USD)</th>
                 <th>Available Supply</th>
                 <th>Total Supply</th>
                 <th>Change(1D)</th>
@@ -52,6 +53,14 @@
             </tbody>
           </table>
         </div>
+
+        <div class="modal-footer">
+          <div *ngIf="pageNumbers.length" class="btn-group-xs">
+            <button type="button" *ngFor="let pageNum of pageNumbers" (click)="getCoins(currentSort, currentOrder, pageNum)"
+            [ngClass]="{active:pageNum === page}" class="btn btn-primary button">{{pageNum}}</button>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>

@@ -3,6 +3,7 @@ import * as io from 'socket.io-client';
 import { Observable } from 'rxjs/Observable';
 import * as Rx from 'rxjs/Rx';
 import { constants } from '../constants/constants';
+import * as uuid from 'uuid';
 
 /**
 * @class SocketService
@@ -16,12 +17,15 @@ export class SocketService {
   * Our socket connection
   */
   private socket: SocketIOClient.Socket;
+  public clientId = uuid();
+  public pageSize:number = 30;
 
   /**
   * connect with server using socket
   */
   connect() {
-    this.socket = io(constants.SOCKET_URL, { 'transports': ['websocket', 'polling'] });
+    console.log(this.clientId, 'clientId');
+    this.socket = io(constants.SOCKET_URL, { 'transports': ['websocket', 'polling'], query: `page=0&clientId=${this.clientId}&sort=rank&sortId=asc&pageSize=${this.pageSize}` });
   }
 
   /**
