@@ -82,6 +82,8 @@
             <th>Trade Price</th>
             <th>Trade Size</th>
             <th>Trade Fee</th>
+            <th>Trade Term</th>
+            <th>Timestamp</th>
           </tr>
         </thead>
         <tbody>
@@ -94,6 +96,8 @@
               <td>{{numberFormat(trade.tradePrice)}}</td>
               <td>{{numberFormat(trade.tradeSize)}}</td>
               <td>{{numberFormat(trade.tradeFee)}}</td>
+              <td>{{trade.tradeTerm}}</td>
+              <td>{{returnLocalString(trade.timestamp)}}</td>
             </tr>
           </ng-container>
         </tbody>

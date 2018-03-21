@@ -2,7 +2,17 @@
   Back
 </button>
 
+<button routerLink="/coin-info" class="ui success button">
+  coin info
+</button>
+
 <p style="color:red">{{coinError}}</p>
+<label>Currency : </label>
+<select class="ui default button" style="width:200px;display:inline" [(ngModel)]="selectedCurrency">
+  <option value="">select currency</option>
+  <option *ngFor="let currency of currencies" value="{{currency}}">{{currency}}</option>
+</select>
+<button (click)="getCoins()" type="button" class="btn btn-primary button">Get coins</button>
 <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 col-xl-12" >
   <h5 class="heading">Coins</h5>
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 col-xl-12">
@@ -71,6 +81,11 @@
   <h5 class="heading">Assets</h5>
   <label>Coin : </label>
   <input class="form-control" style="width:200px;display:inline" type="text" [(ngModel)]="assetPairInput"/>
+  <label>Currency : </label>
+  <select class="ui default button" style="width:200px;display:inline" [(ngModel)]="selectedAssetCurrency">
+    <option value="">select currency</option>
+    <option *ngFor="let currency of currencies" value="{{currency}}">{{currency}}</option>
+  </select>
   <button (click)="getAssets()" type="button" class="btn btn-primary button">Find</button>
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 col-xl-12">
     <div class="timeline-panel">

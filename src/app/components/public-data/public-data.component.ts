@@ -30,6 +30,9 @@ export class PublicDataComponent {
   public page:number = 0;
   public currentSort = 'rank';
   public currentOrder = 'asc';
+  public currencies: any =  ["AED","AFN","ALL","AMD","ANG","AOA","ARS","AUD","AWG","AZN","BAM","BBD","BDT","BGN","BHD","BIF","BMD","BND","BOB","BOV","BRL","BSD","BTN","BWP","BYR","BZD","CAD","CDF","CHE","CHF","CHW","CLF","CLP","CNY","COP","COU","CRC","CUP","CVE","CYP","CZK","DJF","DKK","DOP","DZD","EEK","EGP","ERN","ETB","EUR","FJD","FKP","GBP","GEL","GHS","GIP","GMD","GNF","GTQ","GYD","HKD","HNL","HRK","HTG","HUF","IDR","ILS","INR","IQD","IRR","ISK","JMD","JOD","JPY","KES","KGS","KHR","KMF","KPW","KRW","KWD","KYD","KZT","LAK","LBP","LKR","LRD","LSL","LTL","LVL","LYD","MAD","MDL","MGA","MKD","MMK","MNT","MOP","MRO","MTL","MUR","MVR","MWK","MXN","MXV","MYR","MZN","NAD","NGN","NIO","NIC","NIS","NOK","NPR","NZD","OMR","PAB","PEN","PGK","PHP","PKR","PLN","PYG","QAR","RON","RSD","RUB","RWF","SAR","SBD","SCR","SDG","SEK","SGD","SHP","SKK","SLL","SOS","SRD","STD","SYP","SZL","THB","TJS","TMM","TND","TOP","TRY","TTD","TWD","TZS","UAH","UGX","USD","USN","USS","UYU","UZS","VEB","VEF","VND","VUV","WST","XAF","XAG","XAU","XBA","XBB","XBC","XBD","XCD","XDR","XFO","XFU","XOF","XPD","XPF","XPT","XTS","XXX","YER","ZAR","ZMK","ZWD"];
+  public selectedCurrency = 'USD';
+  public selectedAssetCurrency = 'USD';
   public sort:any = {
     'rank': 'asc',
     'priceInUsd': 'asc',
@@ -74,6 +77,7 @@ export class PublicDataComponent {
           this.uiCoins.data[coinTicker].market_cap_usd = msg.data.market_cap_usd;
           this.uiCoins.data[coinTicker].price_btc = msg.data.price_btc;
           this.uiCoins.data[coinTicker].price_usd = msg.data.price_usd;
+          this.uiCoins.data[coinTicker].rank = msg.data.rank;
           console.log(coinTicker, msg.data);
         }
       }
@@ -88,7 +92,7 @@ export class PublicDataComponent {
     this.coinError = '';
     this.coins = [];
     this.uiCoins = { data: {}, keys: [] };
-    this.commonService.getMethod(`${apiUrl.coins}?limit=${this.socketService.pageSize}&page=${this.page}&sort=${sortKey}&sortId=${sortOrder}&clientId=${this.socketService.clientId}`)
+    this.commonService.getMethod(`${apiUrl.coins}?limit=${this.socketService.pageSize}&page=${this.page}&sort=${sortKey}&sortId=${sortOrder}&clientId=${this.socketService.clientId}&currency=${this.selectedCurrency}`)
     .then((data:any) => {
       if (data.status) {
         this.getPageNumbers(data.pagination.total);
@@ -115,16 +119,21 @@ export class PublicDataComponent {
   }
 
   numberFormat(value:number) {
-    if (value % 1 === 0) {
-      return value;
+    if (value) {
+      if (value % 1 === 0) {
+        return value;
+      } else {
+        return value.toFixed(4);
+      }
     } else {
-      return value.toFixed(4);
+      return value;
     }
   }
+
   getAssets() {
     this.error = '';
     this.assets = [];
-    this.commonService.getMethod(`${apiUrl.assetprice}?limit=5000&pair=${this.assetPairInput}`)
+    this.commonService.getMethod(`${apiUrl.assetprice}?limit=5000&pair=${this.assetPairInput}&currency=${this.selectedAssetCurrency}`)
     .then((data:any) => {
       if (data.status) {
         this.assets = data.info;

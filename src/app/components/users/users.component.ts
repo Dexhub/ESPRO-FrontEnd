@@ -126,7 +126,9 @@ export class UsersComponent {
 
             let totalAmount = 0;
             this.aggregateAmountObj.keys.forEach((key) => {
-              totalAmount += this.aggregateAmountObj.data[key].value;
+              if (this.aggregateAmountObj.data[key].value && !isNaN(this.aggregateAmountObj.data[key].value)) {
+                totalAmount += this.aggregateAmountObj.data[key].value;
+              }
             });
 
             this.aggregateAmountObj.keys.forEach((key) => {
@@ -141,9 +143,12 @@ export class UsersComponent {
           if (this.portfolio.percentageContributionObj && this.portfolio.percentageContributionObj.data[coinTicker]) {
             this.portfolio.percentageContributionObj.data[coinTicker].priceClass = (this.portfolio.percentageContributionObj.data[coinTicker].priceOfOneUnit > msg.data.price_usd) ? 'decrease' :  ((this.portfolio.percentageContributionObj.data[coinTicker].priceOfOneUnit < msg.data.price_usd)) ? 'increase' : 'neutral';
             this.portfolio.percentageContributionObj.data[coinTicker].priceOfOneUnit = msg.data.price_usd;
+            this.portfolio.percentageContributionObj.data[coinTicker].totalBalanceInUsd = (msg.data.price_usd * this.portfolio.percentageContributionObj.data[coinTicker].totalUnits);
             let totalAmount = 0;
             this.portfolio.percentageContributionObj.keys.forEach((key) => {
-              totalAmount += this.portfolio.percentageContributionObj.data[key].totalBalanceInUsd;
+              if (this.portfolio.percentageContributionObj.data[key].totalBalanceInUsd && !isNaN(this.portfolio.percentageContributionObj.data[key].totalBalanceInUsd)) {
+                totalAmount += this.portfolio.percentageContributionObj.data[key].totalBalanceInUsd;
+              }
             });
 
             if (totalAmount !== 0 && totalAmount !== null && !isNaN(totalAmount) && totalAmount !== Infinity) {
@@ -173,6 +178,7 @@ export class UsersComponent {
           this.portfolio.percentageContributionObj.data[obj.coinTicker].priceClass = 'neutral';
           this.portfolio.percentageContributionObj.keys.push(obj.coinTicker);
         });
+        console.log(this.portfolio.portfolioData)
       })
       .catch((error) => {
         console.log(error);
@@ -215,7 +221,19 @@ export class UsersComponent {
   }
 
   numberFormat(value:number) {
-    return value.toFixed(2);
+    if (value) {
+      if (value % 1 === 0) {
+        return value;
+      } else {
+        return value.toFixed(4);
+      }
+    } else {
+      return value;
+    }
+  }
+
+  returnLocalString(date) {
+    return new Date(date).toLocaleString();
   }
 
   validateUserInfoData(data:UserInfoData) {
@@ -223,8 +241,6 @@ export class UsersComponent {
       this.error = 'please provide a valid access key';
     } else if (data.secret === undefined  || data.secret === null || data.secret.trim() === '') {
       this.error = 'please provide a valid access key';
-    } else if (data.passPhrase === undefined  || data.passPhrase === null || data.passPhrase.trim() === '') {
-      this.error = 'please provide a valid password';
     } else if (data.exchangeId === undefined  || data.exchangeId === null || data.exchangeId.toString() === '') {
       this.error = 'please select a valid exchange';
     } else {
@@ -280,7 +296,7 @@ export class UsersComponent {
 
   getTradesHistory() {
     this.trades = [];
-    this.commonService.getMethod(`${apiUrl.trade}/fetch?userId=${this.userId}`)
+    this.commonService.getMethod(`${apiUrl.trade}/fetch?userId=${this.userId}&limit=5000`)
     .then((res: { success:Boolean, info: { trades: Array<TradeObj> } }) => {
       this.trades = res.info.trades;
     })

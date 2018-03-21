@@ -1,0 +1,79 @@
+
+<p style="color:red">{{coinError}}</p>
+
+<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 col-xl-12" >
+  <h5 class="heading">Coin Info</h5>
+  <label>Coin : </label>
+  <select class="ui default button" style="width:200px;display:inline" [(ngModel)]="coin">
+    <option value="">select coin</option>
+    <option *ngFor="let option of symbols" value="{{option.symbol}}">{{option.symbol}}</option>
+  </select>
+  <label>Days : </label>
+  <input class="form-control" style="width:200px;display:inline" type="number" [(ngModel)]="days"/>
+
+  <label>Interval (in minutes) : </label>
+  <input class="form-control" style="width:200px;display:inline" type="number" [(ngModel)]="interval"/>
+
+  <button (click)="getCoin()" type="button" class="btn btn-primary button">Refresh</button>
+
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 col-xl-12">
+    <div class="timeline-panel">
+      <div class="row">
+        <div class="col-sm-12" *ngIf="coinData.history && coinData.history.prices">
+          <br/>
+          <h6>Coin name: {{coinData.name}}</h6>
+          <h6>Coin symbol: {{coinData.symbol}}</h6>
+          <h6>Coin rank: {{coinData.rank}}</h6>
+          <h6>Coin price(USD): {{coinData.priceInUsd}} </h6>
+          <h6>Coin price(BTC): {{coinData.priceInBtc}} </h6>
+          <h6>Coin volume(24 hour): {{coinData.volume24Hour}} </h6>
+          <h6>Coin change(last 1 hour): {{coinData.change1h}} </h6>
+          <h6>Coin change(last 1 day): {{coinData.change1d}} </h6>
+          <h6>Coin change(last 7 days): {{coinData.change7d}} </h6>
+          <h6>Coin exchange: {{coinData.exchange}} </h6>
+          <h6>Coin market cap: {{coinData.marketCap}} </h6>
+          <h6>Coin available supply: {{coinData.availableSupply}} </h6>
+          <h6>Coin total supply: {{coinData.totalSupply}} </h6>
+          <br/><br/>
+
+          <table class="table row-border hover" datatable="ng" [dtOptions]="dtOptions">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <!-- <th>Timestamp</th> -->
+                <th>Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let price of coinData.history.prices; let i = index">
+                <tr>
+                  <td>{{objKeys(price)[0]}}</td>
+                  <!-- <td>{{timestamp(objKeys(price)[0])}}</td> -->
+                  <td>{{price[objKeys(price)[0]]}}</td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-12 col-md-12"  *ngIf="coinChartData.label[0]">
+    <h5 class="heading">Coin Data Chart</h5>
+    <div class="card mb-3">
+      <div class="card-header">
+        coin price change over time
+      </div>
+      <div class="card-block">
+        <div class="col-lg-12 col-md-12">
+          <div class="chart-contanier">
+            <canvas baseChart height="100px" [datasets]="coinChartData.data" [labels]="coinChartData.label" [chartType]="'line'">
+            </canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
