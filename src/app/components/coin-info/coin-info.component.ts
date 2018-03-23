@@ -18,7 +18,9 @@ export class CoinInfoComponent {
   public coin: string = 'BTC';
   public days: number = 30;
   public interval: number = 60;
-  public coinChartData: any = { data: [{ data: [], label: "coin price" }], label: [] };
+  public coinPriceChartData: any = { data: [{ data: [], label: "coin price" }], label: [] };
+  public coinVolumeChartData: any = { data: [{ data: [], label: "volume" }], label: [] };
+  public coinMarketCapChartData: any = { data: [{ data: [], label: "market cap" }], label: [] };
   public coinData: any = {};
   public symbols: any = symbols;
   public dtOptions: DataTables.Settings = {};
@@ -29,7 +31,7 @@ export class CoinInfoComponent {
 
 
   getCoin() {
-    this.coinChartData = { data: [{ data: [], label: "coin price" }], label: [] };
+    this.coinPriceChartData = { data: [{ data: [], label: "coin price" }], label: [] };
     this.coinData = {};
     if (this.coin !== "") {
       this.commonService.getMethod(`${apiUrl.coininfo}?coin=${this.coin}&fetchHistory=true&days=${this.days}&interval=${this.interval}`)
@@ -37,8 +39,18 @@ export class CoinInfoComponent {
         this.coinData = data.info[0];
         this.coinData.history.prices.forEach((price) => {
           const key = this.objKeys(price)[0];
-          this.coinChartData.label.push(key);
-          this.coinChartData.data[0].data.push(price[key]);
+          this.coinPriceChartData.label.push(key);
+          this.coinPriceChartData.data[0].data.push(price[key]);
+        });
+        this.coinData.history['24h_volume_usd'].forEach((volume) => {
+          const key = this.objKeys(volume)[0];
+          this.coinVolumeChartData.label.push(key);
+          this.coinVolumeChartData.data[0].data.push(volume[key]);
+        });
+        this.coinData.history.market_cap_usd.forEach((marketCap) => {
+          const key = this.objKeys(marketCap)[0];
+          this.coinMarketCapChartData.label.push(key);
+          this.coinMarketCapChartData.data[0].data.push(marketCap[key]);
         });
       });
     }

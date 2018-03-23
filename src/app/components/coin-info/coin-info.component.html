@@ -59,8 +59,9 @@
     </div>
   </div>
 
-  <div class="col-lg-12 col-md-12"  *ngIf="coinChartData.label[0]">
+  <div class="col-lg-12 col-md-12"  *ngIf="coinPriceChartData.label[0]">
     <h5 class="heading">Coin Data Chart</h5>
+
     <div class="card mb-3">
       <div class="card-header">
         coin price change over time
@@ -68,12 +69,41 @@
       <div class="card-block">
         <div class="col-lg-12 col-md-12">
           <div class="chart-contanier">
-            <canvas baseChart height="100px" [datasets]="coinChartData.data" [labels]="coinChartData.label" [chartType]="'line'">
+            <canvas baseChart height="100px" [datasets]="coinPriceChartData.data" [labels]="coinPriceChartData.label" [chartType]="'line'">
             </canvas>
           </div>
         </div>
       </div>
     </div>
+
+    <div class="card mb-3">
+      <div class="card-header">
+        coin volume change over time
+      </div>
+      <div class="card-block">
+        <div class="col-lg-12 col-md-12">
+          <div class="chart-contanier">
+            <canvas baseChart height="100px" [datasets]="coinVolumeChartData.data" [labels]="coinVolumeChartData.label" [chartType]="'line'">
+            </canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-header">
+        market cap change over time
+      </div>
+      <div class="card-block">
+        <div class="col-lg-12 col-md-12">
+          <div class="chart-contanier">
+            <canvas baseChart height="100px" [datasets]="coinMarketCapChartData.data" [labels]="coinMarketCapChartData.label" [chartType]="'line'">
+            </canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
 </div>
