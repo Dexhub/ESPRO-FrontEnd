@@ -28,10 +28,10 @@
                 <th style="cursor:pointer" (click)="getCoins('rank', (sort['rank'] === 'asc') ? 'desc' : 'asc', page)"><i class="fa fa-sort"></i> Rank</th>
                 <th>Exchange</th>
                 <th style="cursor:pointer" (click)="getCoins('priceInUsd', (sort['priceInUsd'] === 'asc') ? 'desc' : 'asc', page)"><i class="fa fa-sort"></i> Price(USD)</th>
-                <th *ngIf="coins[0].currency !== 'USD'">Price({{coins[0].currency}})</th>
                 <th>Price(BTC)</th>
-                <th style="cursor:pointer" (click)="getCoins('volume24Hour', (sort['volume24Hour'] === 'asc') ? 'desc' : 'asc', page)"><i class="fa fa-sort"></i> Volume(24H)</th>
-                <th style="cursor:pointer" (click)="getCoins('marketCap', (sort['marketCap'] === 'asc') ? 'desc' : 'asc', page)"><i class="fa fa-sort"></i> Market Cap(USD)</th>
+                <th *ngIf="coins[0].currency !== 'USD'">Price({{coins[0].currency}})</th>
+                <th style="cursor:pointer" (click)="getCoins('volume24Hour', (sort['volume24Hour'] === 'asc') ? 'desc' : 'asc', page)"><i class="fa fa-sort"></i> Volume(24H)<br/>({{coins[0].currency}})</th>
+                <th style="cursor:pointer" (click)="getCoins('marketCap', (sort['marketCap'] === 'asc') ? 'desc' : 'asc', page)"><i class="fa fa-sort"></i> Market Cap({{coins[0].currency}})</th>
                 <th>Available Supply</th>
                 <th>Total Supply</th>
                 <th>Change(1D)</th>
@@ -47,8 +47,8 @@
                   <td>{{uiCoins.data[coinSymbol].rank}}</td>
                   <td>{{uiCoins.data[coinSymbol].exchange}}</td>
                   <td class="{{uiCoins.data[coinSymbol].priceClass}}">{{numberFormat(uiCoins.data[coinSymbol].price_usd)}}</td>
-                  <td *ngIf="coins[0].currency !== 'USD'">{{numberFormat(uiCoins.data[coinSymbol].rate)}}</td>
                   <td>{{numberFormat(uiCoins.data[coinSymbol].price_btc)}}</td>
+                  <td *ngIf="coins[0].currency !== 'USD'">{{numberFormat(uiCoins.data[coinSymbol].rate)}}</td>
                   <td>{{numberFormat(uiCoins.data[coinSymbol]['24h_volume'])}}</td>
                   <td>{{numberFormat(uiCoins.data[coinSymbol].market_cap_usd) || 0}}</td>
                   <td>{{numberFormat(uiCoins.data[coinSymbol].available_supply) || 0}}</td>
@@ -96,8 +96,8 @@
                 <th>Exchange</th>
                 <th>Pair</th>
                 <th>Price(USD)</th>
-                <th>Volume(24H) (in USD)</th>
-                <th>Rate</th>
+                <th *ngIf="assets[0].currency !== 'USD'">Price({{assets[0].currency}})</th>
+                <th>Volume(24H) (in {{assets[0].currency}})</th>
                 <th>Currency</th>
               </tr>
             </thead>
@@ -108,9 +108,8 @@
                   <td>{{asset.exchange}}</td>
                   <td>{{asset.pair}}</td>
                   <td>{{asset.price_usd}}</td>
+                  <td *ngIf="assets[0].currency !== 'USD'">{{asset.rate}}</td>
                   <td>{{asset['24h_volume_usd']}}</td>
-                  <td>{{asset.rate}}</td>
-                  <td>{{asset.currency}}</td>
                 </tr>
               </ng-container>
             </tbody>

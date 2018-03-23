@@ -14,10 +14,9 @@ export const constants = {
   * API Url
   */
   API_URL: 'http://localhost:3010/api/v1',
-  /**
-  * SOCKET Url
-  */
-  SOCKET_URL: 'http://localhost:3000'
+  SOCKET_URL: 'http://localhost:3000',
+  // API_URL: 'http://eveningstar-2019458674.us-east-1.elb.amazonaws.com/api/v1',
+  // SOCKET_URL: 'http://54.172.4.241:3000'
 }
 
 export const apiUrl = {
@@ -29,4 +28,5 @@ export const apiUrl = {
   assetprice: `${constants.API_URL}/assetprice`,
   exchangecoinlist: `${constants.API_URL}/exchangecoinlist`,
   coininfo: `${constants.API_URL}/coininfo`,
+  coinsid: `${constants.API_URL}/coinsid`,
 }

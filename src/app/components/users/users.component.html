@@ -178,4 +178,97 @@
       </div>
     </div>
   </div>
+
+
+  <h3 class="heading">Subscribe to notification</h3>
+  <p class="font-red"> &nbsp; &nbsp; &nbsp; &nbsp;{{subscriptionError}}</p><br/>
+    <div class="col-lg-12 col-md-12" style="display:flex">
+      <div class="col-lg-4 col-md-4" style="display:flex">
+        <form role="form" [formGroup]="subscriptionForm" (ngSubmit)="onSubmitSubscription(subscriptionForm.value)" *ngIf="subscriptionFormType === 'add'">
+          <div class="form-div1">
+            <fieldset class="form-group">
+              <label>Coin</label>
+              <select class="ui default button" formControlName="coinTicker">
+                <option value="">Select Coin</option>
+                <option *ngFor="let coin of coinsList" value="{{coin.symbol}}">{{coin.symbol}}({{coin.name}})</option>
+              </select>
+            </fieldset>
+            <fieldset class="form-group">
+              <label>Alert Types</label>
+              <select class="ui default button" formControlName="alertType">
+                <option value="">Select Alert Type</option>
+                <option *ngFor="let alertType of alertTypes" value="{{alertType.key}}">{{alertType.value}}</option>
+              </select>
+            </fieldset>
+            <fieldset class="form-group">
+              <label>Change Value</label>
+              <input class="form-control" type="number" formControlName="changeValue">
+            </fieldset>
+          </div>
+          <div class="heading">
+            <button type="submit" class="ui primary button marginTop22">Add</button>
+            <button type="button" class="ui button" (click)="changeSubscriptionFormTypeToUpdate()">or, edit an existing subscription</button>
+          </div>
+        </form>
+
+        <form role="form" [formGroup]="subscriptionUpdateForm" (ngSubmit)="onSubmitSubscriptionUpdate(subscriptionUpdateForm.value)" *ngIf="subscriptionFormType === 'update'">
+          <div class="form-div1">
+            <fieldset class="form-group">
+              <label>Edit Subscription</label>
+              <select (change)="setSubToUpdate()" [(ngModel)]="subscriptionId" class="ui default button" formControlName="coinTicker">
+                <option value="">Select subscription</option>
+                <option *ngFor="let subscription of subscriptions" value="{{subscription.id}}">Edit Subscription {{subscription.id}}</option>
+              </select>
+            </fieldset>
+            <fieldset class="form-group">
+              <label>Coin</label>
+              <select class="ui default button" formControlName="coinTicker">
+                <option value="">Select Coin</option>
+                <option *ngFor="let coin of coinsList" value="{{coin.symbol}}">{{coin.symbol}}({{coin.name}})</option>
+              </select>
+            </fieldset>
+            <fieldset class="form-group">
+              <label>Alert Types</label>
+              <select class="ui default button" formControlName="alertType">
+                <option value="">Select Alert Type</option>
+                <option *ngFor="let alertType of alertTypes" value="{{alertType.key}}">{{alertType.value}}</option>
+              </select>
+            </fieldset>
+            <fieldset class="form-group">
+              <label>Change Value</label>
+              <input class="form-control" type="number" formControlName="changeValue">
+            </fieldset>
+          </div>
+          <div class="heading">
+            <button type="submit" class="ui primary button marginTop22">Update</button>
+            <button type="button" class="ui button" (click)="changeSubscriptionFormTypeToAdd()">or, add a new subscription</button>
+          </div>
+        </form>
+      </div>
+      <div class="col-lg-8 col-md-8">
+        <h5 class="heading">Your Subscriptions</h5><br/>
+        <table class="table" *ngIf="subscriptions[0]">
+          <thead>
+            <tr>
+              <th>Id</th>
+              <th>Coin ticker</th>
+              <th>Subscrition<br/>Type</th>
+              <th>Change Value</th>
+              <th>Base Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let subscription of subscriptions; let i = index">
+              <tr>
+                <td>{{subscription.id}}</td>
+                <td>{{subscription.coinTicker}}</td>
+                <td>{{subscription.alertType}}</td>
+                <td>{{subscription.changeValue}}</td>
+                <td>{{subscription.baseValue}}</td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </div>
 </div>

@@ -20,6 +20,17 @@ export class CommonService {
     });
   }
 
+  putMethod(data: object, url:string) {
+    return new Promise((resolve, reject) => {
+      const headers = this.authService.getHeaders();
+      this.http.put(url, data, { headers: headers })
+        .subscribe(
+          (res: Response) => { resolve(res.json()); },
+          (error) => { reject(error.json()); }
+        );
+    });
+  }
+
   getMethod(url:string) {
     return new Promise((resolve, reject) => {
       const headers = this.authService.getHeaders();

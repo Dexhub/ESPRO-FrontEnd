@@ -5,6 +5,7 @@ import { CommonService, SocketService } from '../../services';
 import { apiUrl } from '../../constants/constants';
 import { DataTablesModule } from 'angular-datatables';
 import { Observable, Subject } from 'rxjs/Rx';
+import * as _ from 'lodash';
 
 export interface UserInfoData {
   userId: number;
@@ -60,6 +61,8 @@ export interface AggregateAmount {
 })
 export class UsersComponent {
   public form: FormGroup;
+  public subscriptionForm: FormGroup;
+  public subscriptionUpdateForm: FormGroup;
   public error:string = '';
   public userIdError:string = '';
   public userId:number;
@@ -74,13 +77,24 @@ export class UsersComponent {
   public portfolio:any = {};
   public pageNumbers: any = [];
   public socketData: any = {};
+  public coinsList: any = [];
+  public subscriptionFormType: string = 'add';
+  public alertTypes: any = [
+    { key: 'percentagePriceChange', value: 'Percentage price change' },
+		{ key: 'percentageVolumeChange', value: 'Percentage volume change' },
+		{ key: 'specificPrice', value: 'Specific price' },
+    // { key: 'percentagePortfolioChange', value: 'Percentage portfolio change' },
+		// { key: 'specificTime', value: 'Specific time' }
+  ];
   public dtOptions: DataTables.Settings = {
      paging: true,
      pagingType: 'simple',
      autoWidth: true
    };
+  public subscriptions: any = [];
   constructor(public router: Router, public commonService: CommonService, private route: ActivatedRoute, public socketService: SocketService) {
     this.resetForm();
+    this.resetSubscriptionForm();
     this.commonService.getMethod(`${apiUrl.user}/exchanges`)
     .then((data:{ status: Boolean, info: { exchanges: Array<Exchange> } }) => {
       this.exchanges = data.info.exchanges;
@@ -97,6 +111,8 @@ export class UsersComponent {
         this.getTradesHistory();
         this.getAggregationAmount();
         this.getPortFolio();
+        this.getCoinsList();
+        this.getMySubscriptions();
       }).catch((error) => {
         this.userIdError = error.errormessage;
       });
@@ -161,6 +177,15 @@ export class UsersComponent {
       });
     }
 
+    getCoinsList() {
+      this.commonService.getMethod(`${apiUrl.coinsid}`)
+      .then((res:any) => {
+        if (res.status) {
+          this.coinsList = res.info.coins;
+        }
+      });
+    }
+
     getPortFolio() {
       this.portfolio = { change1d: {}, percentageContribution: [], portfolioData: [], percentageContributionObj: { data: {}, keys: [] } };
       this.commonService.getMethod(`${apiUrl.portfolio}/fetch?userId=${this.userId}`)
@@ -220,6 +245,36 @@ export class UsersComponent {
     });
   }
 
+  public subscriptionError: string = '';
+  resetSubscriptionForm() {
+    this.subscriptionForm = new FormGroup({
+      coinTicker: new FormControl('', [
+        Validators.required
+      ]),
+      alertType: new FormControl('', [
+        Validators.required
+      ]),
+      changeValue: new FormControl('', [
+        Validators.required
+      ])
+    });
+
+    this.subscriptionUpdateForm = new FormGroup({
+      subscriptionId: new FormControl('', [
+        Validators.required
+      ]),
+      coinTicker: new FormControl('', [
+        Validators.required
+      ]),
+      alertType: new FormControl('', [
+        Validators.required
+      ]),
+      changeValue: new FormControl('', [
+        Validators.required
+      ])
+    });
+  }
+
   numberFormat(value:number) {
     if (value) {
       if (value % 1 === 0) {
@@ -248,6 +303,21 @@ export class UsersComponent {
     }
   }
 
+  validateSubscriptionData(data:any) {
+    this.subscriptionError = '';
+    if (data.coinTicker === '') {
+      this.subscriptionError = 'please select coin';
+      return false;
+    } else if (data.alertType === '') {
+      this.subscriptionError = 'please select alert type';
+      return false;
+    } else if (data.changeValue === '' || isNaN(data.changeValue)) {
+      this.subscriptionError = 'please provide a valid change value';
+      return false;
+    }
+    return true;
+  }
+
   onSubmit(data: UserInfoData) {
     this.validateUserInfoData(data);
     if (this.error === '') {
@@ -268,6 +338,81 @@ export class UsersComponent {
         this.error = error.errormessage;
       })
     }
+  }
+
+  public subscriptionId: any = '';
+  setSubToUpdate() {
+    const index = _.findIndex(this.subscriptions, (sub) => {
+      return sub.id == this.subscriptionId;
+    });
+    this.subscriptionUpdateForm = new FormGroup({
+      subscriptionId: new FormControl(this.subscriptions[index].id, [
+        Validators.required
+      ]),
+      coinTicker: new FormControl(this.subscriptions[index].coinTicker, [
+        Validators.required
+      ]),
+      alertType: new FormControl(this.subscriptions[index].alertType, [
+        Validators.required
+      ]),
+      changeValue: new FormControl(this.subscriptions[index].changeValue, [
+        Validators.required
+      ])
+    });
+  }
+  onSubmitSubscriptionUpdate(data) {
+    console.log(data, 'update');
+    if (this.validateSubscriptionData(data)) {
+      data.userId = this.userId;
+      this.commonService.putMethod(data, `${apiUrl.user}/subscribe/${data.subscriptionId}`)
+      .then((res: any) => {
+        if (res.status) {
+          this.resetSubscriptionForm();
+          const index = _.findIndex(this.subscriptions, (sub) => {
+            return sub.id == data.subscriptionId;
+          });
+          this.subscriptions[index] = res.info.subscription;
+        }
+      })
+      .catch((error) => {
+        console.log('subscription error', error);
+      });
+    }
+  }
+  onSubmitSubscription(data:any) {
+    if (this.validateSubscriptionData(data)) {
+      data.userId = this.userId;
+      this.commonService.postMethod(data, `${apiUrl.user}/subscribe`)
+      .then((res: any) => {
+        console.log(res);
+        this.resetSubscriptionForm();
+        this.subscriptions.push(res.info.subscription);
+      })
+      .catch((error) => {
+        console.log('subscription error', error);
+      });
+    }
+  }
+
+  changeSubscriptionFormTypeToUpdate() {
+    this.subscriptionFormType = 'update';
+  }
+
+  changeSubscriptionFormTypeToAdd() {
+    this.subscriptionFormType = 'add';
+  }
+
+  getMySubscriptions() {
+    this.commonService.getMethod(`${apiUrl.user}/subscriptions?userId=${this.userId}`)
+    .then((subscriptions: any) => {
+      if (subscriptions.status) {
+        this.subscriptions = subscriptions.info.subscriptions;
+      }
+      console.log(this.subscriptions);
+    })
+    .catch((error) => {
+      console.log(error)
+    });
   }
 
   syncBalance(exchangeId:number) {
