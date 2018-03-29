@@ -69,71 +69,94 @@
     </div>
   </div>
 
-  <div class="col-lg-12 col-md-12" style="display:flex">
-    <div class="col-lg-6 col-md-6">
-      <h5 class="heading">Trades History <button class="ui primary button action" (click)="getTradesHistory()"><i class="fa fa-refresh"></i></button></h5>
-      <table class="table" datatable="ng" [dtOptions]="dtOptions" *ngIf="trades[0]">
-        <thead>
+  <div class="col-lg-12 col-md-12" style="border-bottom:1px solid black">
+    <h5 class="heading">Trades History <button class="ui primary button action" (click)="getTradesHistory()"><i class="fa fa-refresh"></i></button></h5>
+    <table class="table" datatable="ng" [dtOptions]="dtOptions" *ngIf="trades[0]">
+      <thead>
+        <tr>
+          <th>Trade Id</th>
+          <th>Exchange</th>
+          <th>Symbol Pair</th>
+          <th>Trade Type</th>
+          <th>Trade Price</th>
+          <th>Trade Size</th>
+          <th>Trade Fee</th>
+          <th>Trade Term</th>
+          <th>Timestamp</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let trade of trades; let i = index">
           <tr>
-            <th>Trade Id</th>
-            <th>Exchange</th>
-            <th>Symbol Pair</th>
-            <th>Trade Type</th>
-            <th>Trade Price</th>
-            <th>Trade Size</th>
-            <th>Trade Fee</th>
-            <th>Trade Term</th>
-            <th>Timestamp</th>
+            <td>{{trade.tradeId}}</td>
+            <td>{{trade.exchangeName}}</td>
+            <td>{{trade.symbolPair}}</td>
+            <td>{{trade.tradeType}}</td>
+            <td>{{numberFormat(trade.tradePrice)}}</td>
+            <td>{{numberFormat(trade.tradeSize)}}</td>
+            <td>{{numberFormat(trade.tradeFee)}}</td>
+            <td>{{trade.tradeTerm}}</td>
+            <td>{{trade.timestamp}}</td>
           </tr>
-        </thead>
-        <tbody>
-          <ng-container *ngFor="let trade of trades; let i = index">
-            <tr>
-              <td>{{trade.tradeId}}</td>
-              <td>{{trade.exchangeName}}</td>
-              <td>{{trade.symbolPair}}</td>
-              <td>{{trade.tradeType}}</td>
-              <td>{{numberFormat(trade.tradePrice)}}</td>
-              <td>{{numberFormat(trade.tradeSize)}}</td>
-              <td>{{numberFormat(trade.tradeFee)}}</td>
-              <td>{{trade.tradeTerm}}</td>
-              <td>{{returnLocalString(trade.timestamp)}}</td>
-            </tr>
-          </ng-container>
-        </tbody>
-      </table>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="col-lg-12 col-md-12" style="display:flex">
+    <div class="col-lg-6">
+      <div *ngIf="userForm === 'show'" style="margin-top:100px">
+        <h5>Email: {{user.email}}</h5>
+        <h5>Contact: {{user.contact}}</h5>
+        <button type="button" class="ui button marginTop22" (click)="userForm = (userForm === 'show') ? 'edit' : 'show'">Edit your details</button>
+      </div>
+      <div>
+        <div class="form-div1" *ngIf="userForm === 'edit'">
+          <fieldset class="form-group">
+            <label>Email</label>
+            <input class="form-control" type="text" [(ngModel)]="user.email">
+          </fieldset>
+          <fieldset class="form-group">
+            <label>Contact</label>
+            <input class="form-control" type="text" [(ngModel)]="user.contact">
+          </fieldset>
+          <div class="heading">
+            <button type="button" class="ui primary button marginTop22" (click)="updateUserDetails()">Update Details</button>
+        </div>
+        </div>
+      </div>
     </div>
     <div class="col-lg-6 col-md-6" style="border-left: 1px solid black">
-      <h5 class="heading">Aggregate Amount <button class="ui primary button action" (click)="getAggregationAmount()"><i class="fa fa-refresh"></i></button> </h5>
-      <table class="table" *ngIf="aggregateAmount[0]" datatable="ng" [dtOptions]="dtOptions">
-        <thead>
-          <tr>
-            <th>Coin</th>
-            <th>Amount</th>
-            <th>Price</th>
-            <th>Change(24 hour)</th>
-            <th>Value(%)</th>
-            <th>ROI</th>
-          </tr>
-        </thead>
-        <tbody>
-          <ng-container *ngFor="let key of aggregateAmountObj.keys; let i = index">
+        <h5 class="heading">Aggregate Amount <button class="ui primary button action" (click)="getAggregationAmount()"><i class="fa fa-refresh"></i></button> </h5>
+        <table class="table" *ngIf="aggregateAmount[0]" datatable="ng" [dtOptions]="dtOptions">
+          <thead>
             <tr>
-              <td>{{aggregateAmountObj.data[key].coin}}</td>
-              <td>{{numberFormat(aggregateAmountObj.data[key].amount)}}</td>
-              <td class="{{aggregateAmountObj.data[key].priceClass}}">{{numberFormat(aggregateAmountObj.data[key].priceInUsd)}}</td>
-              <td>{{numberFormat(aggregateAmountObj.data[key].change24Hour)}}</td>
-              <td class="{{aggregateAmountObj.data[key].priceClass}}">{{numberFormat(aggregateAmountObj.data[key].value) + "(" + numberFormat(aggregateAmountObj.data[key].valuePercentage) +")"}}</td>
-              <td class="{{aggregateAmountObj.data[key].priceClass}}">{{numberFormat(aggregateAmountObj.data[key].ROI)}}</td>
+              <th>Coin</th>
+              <th>Amount</th>
+              <th>Price</th>
+              <th>Change(24 hour)</th>
+              <th>Value(%)</th>
+              <th>ROI</th>
             </tr>
-          </ng-container>
-        </tbody>
-      </table>
-    </div>
-</div>
-
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let key of aggregateAmountObj.keys; let i = index">
+              <tr>
+                <td>{{aggregateAmountObj.data[key].coin}}</td>
+                <td>{{numberFormat(aggregateAmountObj.data[key].amount)}}</td>
+                <td class="{{aggregateAmountObj.data[key].priceClass}}">{{numberFormat(aggregateAmountObj.data[key].priceInUsd)}}</td>
+                <td>{{numberFormat(aggregateAmountObj.data[key].change24Hour)}}</td>
+                <td class="{{aggregateAmountObj.data[key].priceClass}}">{{numberFormat(aggregateAmountObj.data[key].value) + "(" + numberFormat(aggregateAmountObj.data[key].valuePercentage) +")"}}</td>
+                <td class="{{aggregateAmountObj.data[key].priceClass}}">{{numberFormat(aggregateAmountObj.data[key].ROI)}}</td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+  </div>
 <br/><br/><br/>
-<h3 class="heading">PortFolio  <button class="ui primary button action" (click)="getPortFolio()"><i class="fa fa-refresh"></i></button></h3>
+<div style="display:block">
+  <h3 class="heading">PortFolio  <button class="ui primary button action" (click)="getPortFolio()"><i class="fa fa-refresh"></i></button></h3>
   <div class="col-lg-12 col-md-12" style="display:flex">
     <div class="col-lg-6 col-md-6">
       <h5 class="heading">Coins Contribution in overall portfolio</h5>
@@ -159,6 +182,7 @@
           </ng-container>
         </tbody>
       </table>
+      <h5>Total Portfolio (USD) : <b>{{totalPortFolio}}</b></h5>
     </div>
     <div class="col-lg-6 col-md-6" style="border-left: 1px solid black" *ngIf="portfolio.portfolioData && portfolio.portfolioData.data">
       <h5 class="heading">Portfolio Data </h5>
@@ -200,9 +224,14 @@
                 <option *ngFor="let alertType of alertTypes" value="{{alertType.key}}">{{alertType.value}}</option>
               </select>
             </fieldset>
-            <fieldset class="form-group">
+            <fieldset class="form-group" [ngClass]="subscriptionForm.value.alertType !== 'specificTime' ? 'form-group' : 'hidden'">
               <label>Change Value</label>
               <input class="form-control" type="number" formControlName="changeValue">
+            </fieldset>
+            <fieldset [ngClass]="subscriptionForm.value.alertType === 'specificTime' ? 'form-group' : 'hidden'">
+              <p *ngIf="this.subscriptionForm.controls.changeTime.errors" class="font-red">Invalid time format</p>
+              <label>Send alert at this time every day : (24 hour format) </label>
+              <input class="form-control" type="text" formControlName="changeTime">
             </fieldset>
           </div>
           <div class="heading">
@@ -217,7 +246,8 @@
               <label>Edit Subscription</label>
               <select (change)="setSubToUpdate()" [(ngModel)]="subscriptionId" class="ui default button" formControlName="coinTicker">
                 <option value="">Select subscription</option>
-                <option *ngFor="let subscription of subscriptions" value="{{subscription.id}}">Edit Subscription {{subscription.id}}</option>
+                <option *ngFor="let subscription of subscriptions" value="{{subscription.id}}"
+                [ngClass]="subscription.alertType === 'specificTime' ? 'hidden' : ''">Edit Subscription {{subscription.id}}</option>
               </select>
             </fieldset>
             <fieldset class="form-group">
@@ -234,9 +264,13 @@
                 <option *ngFor="let alertType of alertTypes" value="{{alertType.key}}">{{alertType.value}}</option>
               </select>
             </fieldset>
-            <fieldset class="form-group">
+            <fieldset class="form-group" [ngClass]="subscriptionUpdateForm.value.alertType !== 'specificTime' ? 'form-group' : 'hidden'">
               <label>Change Value</label>
               <input class="form-control" type="number" formControlName="changeValue">
+            </fieldset>
+            <fieldset [ngClass]="subscriptionUpdateForm.value.alertType === 'specificTime' ? 'form-group' : 'hidden'">
+              <label>Send alert at this time every day : (24 hour format) </label>
+              <input class="form-control" type="text" formControlName="changeTime">
             </fieldset>
           </div>
           <div class="heading">
@@ -254,16 +288,18 @@
               <th>Coin ticker</th>
               <th>Subscrition<br/>Type</th>
               <th>Change Value</th>
+              <th>Change Time</th>
               <th>Base Value</th>
             </tr>
           </thead>
           <tbody>
             <ng-container *ngFor="let subscription of subscriptions; let i = index">
-              <tr>
+              <tr *ngIf="subscription">
                 <td>{{subscription.id}}</td>
                 <td>{{subscription.coinTicker}}</td>
                 <td>{{subscription.alertType}}</td>
                 <td>{{subscription.changeValue}}</td>
+                <td>{{changeTimeToLocal(subscription.changeTime, subscription.alertType)}}</td>
                 <td>{{subscription.baseValue}}</td>
               </tr>
             </ng-container>

@@ -32,6 +32,8 @@ export class CoinInfoComponent {
 
   getCoin() {
     this.coinPriceChartData = { data: [{ data: [], label: "coin price" }], label: [] };
+    this.coinVolumeChartData = { data: [{ data: [], label: "volume" }], label: [] };
+    this.coinMarketCapChartData = { data: [{ data: [], label: "market cap" }], label: [] };
     this.coinData = {};
     if (this.coin !== "") {
       this.commonService.getMethod(`${apiUrl.coininfo}?coin=${this.coin}&fetchHistory=true&days=${this.days}&interval=${this.interval}`)
