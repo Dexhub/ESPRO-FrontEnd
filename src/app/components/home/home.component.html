@@ -1,39 +1,76 @@
-<button routerLink="/public-data" class="ui success button">
-  public data
-</button>
-<button routerLink="/coin-info" class="ui success button">
-  coin info
-</button>
-<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 col-xl-12" >
-  <h5 class="heading"><i class="fa fa-user"></i>Users</h5>
-  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 col-xl-12">
-    <div class="timeline-panel">
-      <div class="row gameVersions">
-        <div class="col-sm-12">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>User Id</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <ng-container *ngFor="let user of users; let i = index">
-                <tr>
-                  <td>{{user.name}}</td>
-                  <td>{{user.userId}}</td>
-                  <td>
-                    <button routerLink="/users/{{user.name}}" class="ui success button action">
-                      <i class="fa fa-eye"></i>
-                    </button>
-                  </td>
-                </tr>
-              </ng-container>
-            </tbody>
-          </table>
-        </div>
+<div *ngIf="!user" class="card text-center">
+  <h6 class="card-header">Login</h6>
+  <div class="col-lg-12 col-md-12" style="padding: 5px 20% 5px !important">
+    <span class="font-red"> &nbsp; &nbsp; &nbsp; &nbsp;{{error}}</span><br/>
+    <form role="form" [formGroup]="signUpForm" (ngSubmit)="signUp(signUpForm.value)" *ngIf="formTag === 'signup'" class="text-left">
+      <div class="form-div1">
+        <fieldset class="form-group">
+          <label>Name</label>
+          <input class="form-control" type="text" formControlName="username">
+        </fieldset>
+
+        <fieldset class="form-group">
+          <label>Email</label>
+          <input class="form-control" type="email" formControlName="email">
+        </fieldset>
+
+        <fieldset class="form-group">
+          <label>Contact Number</label>
+          <input class="form-control" type="text" formControlName="contact">
+        </fieldset>
+
+        <fieldset class="form-group">
+          <label>Password</label>
+          <input class="form-control" type="password" formControlName="password">
+        </fieldset>
       </div>
-    </div>
+      <div class="heading">
+        <button type="submit" class="ui primary button marginTop22" [disabled]="signUpForm.controls.username.errors || signUpForm.controls.email.errors || signUpForm.controls.contact.errors || signUpForm.controls.password.errors">Signup</button>
+      </div>
+    </form>
+
+    <form role="form" [formGroup]="loginForm" (ngSubmit)="login(loginForm.value)" *ngIf="formTag === 'login'" class="text-left">
+      <div class="form-div1">
+        <fieldset class="form-group">
+          <label>Email/Contact</label>
+          <input class="form-control" type="text" formControlName="username">
+        </fieldset>
+        <fieldset class="form-group">
+          <label>Password</label>
+          <input class="form-control" type="password" formControlName="password">
+        </fieldset>
+      </div>
+      <div class="heading">
+        <button type="submit" class="ui primary button marginTop22" [disabled]="loginForm.controls.username.errors || loginForm.controls.password.errors">Login</button>
+      </div>
+    </form>
   </div>
+  <div class="card-block">
+     <button class="btn btn-social-icon btn-google" (click)="signInWithGoogle()">
+       <span class="fa fa-google"></span>
+     </button>
+     <button class="btn btn-social-icon btn-facebook" (click)="signInWithFacebook()">
+       <span class="fa fa-facebook"></span>
+     </button>
+     <button class="ui primary button" (click)="formTag = (formTag === 'signup') ? 'login' : 'signup'">{{ (formTag === 'signup') ? 'existing user?' : 'new user?'}}</button>
+  </div>
+</div>
+<div *ngIf="user && user !== null" class="card text-center">
+  <div class="card-block">
+    <h4 class="card-title text-align">{{ user.name }}</h4>
+    <p class="card-text text-align">{{ user.email }}</p>
+    <p class="card-text text-align">{{ user.contact }}</p>
+  </div>
+  <div class="card-block">
+    <button class="btn btn-danger" (click)="signOut()">Sign out</button>
+    <button class="ui success button" routerLink="/privatedata">My Trades</button>
+  </div>
+</div>
+<div style="width:100%;text-align:center">
+  <button routerLink="/public-data" class="ui success button">
+    public data
+  </button>
+  <button routerLink="/coin-info" class="ui success button">
+    coin info
+  </button>
 </div>

@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
 import { AppComponent } from './app.component';
-import { UsersComponent, HomeComponent, PublicDataComponent, CoinInfoComponent } from './components';
+import { UsersComponent, HomeComponent, PublicDataComponent, CoinInfoComponent, LoginComponent } from './components';
 
 /**
 * Define sub routes
@@ -14,6 +14,10 @@ const routes: Routes = [
     pathMatch: 'full',
   },
   {
+    path: 'login', component: LoginComponent,
+    pathMatch: 'full',
+  },
+  {
     path: 'public-data', component: PublicDataComponent,
     pathMatch: 'full',
   },
@@ -22,7 +26,7 @@ const routes: Routes = [
     pathMatch: 'full',
   },
   {
-    path: 'users/:id', component: UsersComponent,
+    path: 'privatedata', component: UsersComponent,
     pathMatch: 'full',
   },
   {

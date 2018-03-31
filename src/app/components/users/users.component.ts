@@ -66,7 +66,6 @@ export class UsersComponent {
   public subscriptionUpdateForm: FormGroup;
   public error:string = '';
   public userIdError:string = '';
-  public userId:number;
   public user:any = {};
   public userForm:string = 'show';
   public addUser: Boolean = false;
@@ -97,6 +96,7 @@ export class UsersComponent {
    };
   public subscriptions: any = [];
   constructor(public router: Router, public commonService: CommonService, private route: ActivatedRoute, public socketService: SocketService) {
+    this.getMyProfile();
     this.resetForm();
     this.resetSubscriptionForm();
     this.commonService.getMethod(`${apiUrl.user}/exchanges`)
@@ -104,30 +104,38 @@ export class UsersComponent {
       this.exchanges = data.info.exchanges;
     });
     this.route.params.subscribe(params => {
-      this.userId = params.id;
-      this.commonService.postMethod({ username: this.userId }, `${apiUrl.user}/login`)
-      .then((userData: any) => {
-        this.userId = userData.info.user.userId;
-        this.user = userData.info.user;
-        console.log(this.user);
-        this.commonService.getMethod(`${apiUrl.user}/${this.userId}/account`)
-        .then((data:{ status: Boolean, info: { userAccountInfo: Array<UserAccount> } }) => {
-          this.userAccounts = data.info.userAccountInfo;
-        });
-        this.getTradesHistory();
-        this.getAggregationAmount();
-        this.getPortFolio();
-        this.getCoinsList();
-        this.getMySubscriptions();
-      }).catch((error) => {
-        this.userIdError = error.errormessage;
+      this.commonService.getMethod(`${apiUrl.user}/accountinfo`)
+      .then((data:{ status: Boolean, info: { userAccountInfo: Array<UserAccount> } }) => {
+        this.userAccounts = data.info.userAccountInfo;
       });
+      this.getTradesHistory();
+      this.getAggregationAmount();
+      this.getPortFolio();
+      this.getCoinsList();
+      this.getMySubscriptions();
+    });
+  }
+
+  getMyProfile() {
+    this.commonService.getMethod(`${apiUrl.user}/profile`)
+    .then((profileData: any) => {
+      if (profileData.status && profileData.info && profileData.info.user) {
+        this.user = {
+          name: profileData.info.user.name,
+          email: profileData.info.user.email,
+          contact: profileData.info.user.contact,
+        };
+      }
+    }).catch((err) => {
+      if (err.errormessage) {
+        this.error = err.errormessage;
+      }
     });
   }
 
   updateUserDetails() {
     console.log(this.user, 'update user data');
-    this.commonService.putMethod(this.user, `${apiUrl.user}/updateprofile/${this.userId}`)
+    this.commonService.putMethod(this.user, `${apiUrl.user}/updateprofile`)
     .then((data) => {
       console.log(data, 'data');
       this.userForm = 'show';
@@ -208,7 +216,7 @@ export class UsersComponent {
 
     getPortFolio() {
       this.portfolio = { change1d: {}, percentageContribution: [], portfolioData: [], percentageContributionObj: { data: {}, keys: [] } };
-      this.commonService.getMethod(`${apiUrl.portfolio}/fetch?userId=${this.userId}`)
+      this.commonService.getMethod(`${apiUrl.portfolio}/fetch`)
       .then((res:any) => {
         this.portfolio = res.info;
         this.portfolio.percentageContributionObj = { data: {}, keys: [] };
@@ -235,7 +243,7 @@ export class UsersComponent {
     getAggregationAmount() {
       this.aggregateAmount = [];
       this.aggregateAmountObj = { data: {}, keys: [] };
-      this.commonService.getMethod(`${apiUrl.trade}/amount?userId=${this.userId}`)
+      this.commonService.getMethod(`${apiUrl.trade}/amount`)
       .then((res: { success:Boolean, info: { coinTotalAmount: Array<AggregateAmount> } }) => {
         this.aggregateAmount = res.info.coinTotalAmount;
         this.aggregateAmount.forEach((obj) => {
@@ -356,7 +364,6 @@ export class UsersComponent {
     onSubmit(data: UserInfoData) {
       this.validateUserInfoData(data);
       if (this.error === '') {
-        data.userId = this.userId;
         this.commonService.postMethod(data, `${apiUrl.user}/authenticate`)
         .then((res: { success: Boolean, info: { userAccountId: number } }) => {
           this.userAccounts.unshift({
@@ -403,7 +410,6 @@ export class UsersComponent {
       data = this.validateSubscriptionData(data);
       console.log(data);
       if (data) {
-        data.userId = this.userId;
         this.commonService.putMethod(data, `${apiUrl.user}/subscribe/${data.subscriptionId}`)
         .then((res: any) => {
           if (res.status) {
@@ -424,7 +430,6 @@ export class UsersComponent {
       data = this.validateSubscriptionData(data);
       console.log(data);
       if (data) {
-        data.userId = this.userId;
         this.commonService.postMethod(data, `${apiUrl.user}/subscribe`)
         .then((res: any) => {
           console.log(res);
@@ -461,7 +466,7 @@ export class UsersComponent {
     }
 
     getMySubscriptions() {
-      this.commonService.getMethod(`${apiUrl.user}/subscriptions?userId=${this.userId}`)
+      this.commonService.getMethod(`${apiUrl.user}/subscriptions`)
       .then((subscriptions: any) => {
         if (subscriptions.status) {
           this.subscriptions = subscriptions.info.subscriptions;
@@ -474,7 +479,7 @@ export class UsersComponent {
 
     syncBalance(exchangeId:number) {
       this.balanceSync[`${exchangeId}`] = true;
-      this.commonService.postMethod({ userId: this.userId, exchangeId }, `${apiUrl.balance}/fetch`)
+      this.commonService.postMethod({ exchangeId }, `${apiUrl.balance}/fetch`)
       .then((res: { success: Boolean, info: { message: string } }) => {
         this.balanceSync[`${exchangeId}`] = false;
       })
@@ -486,7 +491,7 @@ export class UsersComponent {
 
     syncTradeHistory(exchangeId:number) {
       this.tradesSync[`${exchangeId}`] = true;
-      this.commonService.postMethod({ userId: this.userId, exchangeId }, `${apiUrl.trade}/fetch`)
+      this.commonService.postMethod({ exchangeId }, `${apiUrl.trade}/fetch`)
       .then((res: { success: Boolean, info: { message: string } }) => {
         this.tradesSync[`${exchangeId}`] = false;
       })
@@ -498,7 +503,7 @@ export class UsersComponent {
 
     getTradesHistory() {
       this.trades = [];
-      this.commonService.getMethod(`${apiUrl.trade}/fetch?userId=${this.userId}&limit=5000`)
+      this.commonService.getMethod(`${apiUrl.trade}/fetch?limit=5000`)
       .then((res: { success:Boolean, info: { trades: Array<TradeObj> } }) => {
         this.trades = res.info.trades;
       })

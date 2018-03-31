@@ -22,6 +22,10 @@ export class AuthService {
     * append access token and content type in headers
     */
     headers.append('Content-Type', 'application/json');
+    const token = localStorage.getItem('token');
+    if (token) {
+      headers.append('x-access-token', token);
+    }
     /**
     * return headers
     */
