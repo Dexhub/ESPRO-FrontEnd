@@ -25,12 +25,18 @@ export interface UserDataResponse {
 
 export class HomeComponent {
   public user;
+  public isLoggedInFromProvider;
   public isLoading = true;
   public signUpForm: FormGroup;
   public loginForm: FormGroup;
+  public editProfileForm: FormGroup;
+  public forgetPasswordForm: FormGroup;
+  public resetPasswordForm: FormGroup;
   public error:string = '';
+  public message:string = '';
   public addUser: Boolean = false;
   public formTag = 'login';
+  public editProfile = false;
 
   constructor(public router: Router, public commonService: CommonService, public socketService: SocketService, private auth: AuthService) {
     this.resetForm();
@@ -39,6 +45,7 @@ export class HomeComponent {
   ngOnInit() {
     this.socketService.disconnect();
     this.auth.authState.subscribe((user) => {
+      this.isLoggedInFromProvider = user;
       if (user) {
         this.isLoading = true;
         if (!localStorage.getItem('token')) {
@@ -72,7 +79,101 @@ export class HomeComponent {
     });
   }
 
+  initiateEditProfileForm() {
+    this.resetErrorSuccessMsg();
+    this.editProfile = true;
+    this.editProfileForm = new FormGroup({
+      username: new FormControl(this.user.name, [
+        Validators.required
+      ]),
+      email: new FormControl(this.user.email, [
+        Validators.required,
+        Validators.email
+      ]),
+      contact: new FormControl(this.user.contact, [
+        Validators.pattern(/^(\+\d{1,3}[- ]?)?\d{10}$/)
+      ])
+    });
+  }
+
+  resetForgetPasswordForm() {
+    this.resetErrorSuccessMsg();
+    this.formTag = 'forgetPassword';
+    this.forgetPasswordForm = new FormGroup({
+      username: new FormControl('', [
+        Validators.required
+      ])
+    });
+    this.resetPasswordForm = new FormGroup({
+      password: new FormControl('', [
+        Validators.required
+      ]),
+      code: new FormControl('', [
+        Validators.required
+      ])
+    });
+  }
+
+
+  forgetPassword(data) {
+    this.resetErrorSuccessMsg();
+    if (!this.forgetPasswordForm.controls.username.errors) {
+      this.commonService.postMethod(data, `${apiUrl.user}/password/forget`)
+      .then((success:any) => {
+        this.resetForgetPasswordForm();
+        this.formTag = 'resetPassword';
+        this.message = success.info.message;
+      })
+      .catch((error) => {
+        this.error = error.errormessage;
+      });
+    }
+  }
+
+  resetPassword(data) {
+    this.resetErrorSuccessMsg();
+    if (!this.resetPasswordForm.controls.password.errors && !this.resetPasswordForm.controls.code.errors) {
+      this.commonService.postMethod(data, `${apiUrl.user}/password/reset`)
+      .then((success:any) => {
+        this.resetForgetPasswordForm();
+        this.formTag = 'login';
+        this.message = success.info.message;
+      })
+      .catch((error) => {
+        this.error = error.errormessage;
+      });
+    }
+  }
+
+  changeFormTag(tag) {
+    this.formTag = tag;
+    this.resetErrorSuccessMsg();
+  }
+
+  resetErrorSuccessMsg() {
+    this.message = '';
+    this.error = '';
+  }
+
+  updateUserDetails(data:any) {
+    this.resetErrorSuccessMsg();
+    if (!this.editProfileForm.controls.username.errors && !this.editProfileForm.controls.email.errors && !this.editProfileForm.controls.contact.errors) {
+      this.commonService.putMethod(data, `${apiUrl.user}/updateprofile`)
+      .then((success:any) => {
+        this.editProfile = false;
+        this.user.username = data.username;
+        this.user.email = data.email;
+        this.user.contact = data.contact;
+        this.message = success.info.message;
+      })
+      .catch((error) => {
+        this.error = error.errormessage;
+      });
+    }
+  }
+
   socialLogin(user) {
+    this.resetErrorSuccessMsg();
     this.commonService.postMethod({ authToken: user.authToken, provider: user.provider }, `${apiUrl.user}/login/social`)
     .then((loginData: any) => {
       this.isLoading = false;
@@ -96,9 +197,9 @@ export class HomeComponent {
   signOut(): void {
    localStorage.removeItem('token');
    this.user = null;
-   try {
+   if (this.isLoggedInFromProvider) {
      this.auth.signOut();
-   } catch(e) {}
+   }
   }
   resetForm() {
     this.signUpForm = new FormGroup({
@@ -113,7 +214,6 @@ export class HomeComponent {
         Validators.required
       ]),
       contact: new FormControl('', [
-        Validators.required,
         Validators.pattern(/^(\+\d{1,3}[- ]?)?\d{10}$/)
       ])
     });
@@ -127,6 +227,7 @@ export class HomeComponent {
     });
   }
   signUp(data:any) {
+    this.resetErrorSuccessMsg();
     this.commonService.postMethod(data, `${apiUrl.user}/signup`)
     .then((signUpdata: any) => {
       if (signUpdata.status && signUpdata.info && signUpdata.info.token) {
@@ -136,6 +237,7 @@ export class HomeComponent {
           email: signUpdata.info.email,
           contact: signUpdata.info.name,
         };
+        this.resetForm();
       }
     })
     .catch((err) => {
@@ -145,6 +247,7 @@ export class HomeComponent {
     });
   }
   login(data: any) {
+    this.resetErrorSuccessMsg();
     this.commonService.postMethod(data, `${apiUrl.user}/login`)
     .then((loginData: any) => {
       if (loginData.status && loginData.info && loginData.info.token) {
@@ -154,6 +257,7 @@ export class HomeComponent {
           email: loginData.info.email,
           contact: loginData.info.contact,
         };
+        this.resetForm();
       }
     })
     .catch((err) => {

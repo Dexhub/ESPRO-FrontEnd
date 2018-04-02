@@ -1,3 +1,5 @@
+import { AuthServiceConfig, GoogleLoginProvider, FacebookLoginProvider } from 'angular4-social-login';
+
 /**
 * this file defines global constants, which are used across the project
 */
@@ -30,3 +32,14 @@ export const apiUrl = {
   coininfo: `${constants.API_URL}/coininfo`,
   coinsid: `${constants.API_URL}/coinsid`,
 }
+
+export const authServiceConfig = new AuthServiceConfig([
+  {
+    id: GoogleLoginProvider.PROVIDER_ID,
+    provider: new GoogleLoginProvider("864084211126-6mp7rq070geovl35v6afdhhbq8rg97s0.apps.googleusercontent.com")
+  },
+  {
+    id: FacebookLoginProvider.PROVIDER_ID,
+    provider: new FacebookLoginProvider("1330643750399864")
+  }
+])

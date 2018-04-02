@@ -15,6 +15,7 @@ import * as _ from 'lodash';
 })
 export class CoinInfoComponent {
   public coinError:string = '';
+  public isLoggedIn: Boolean = false;
   public coin: string = 'BTC';
   public days: number = 30;
   public interval: number = 60;
@@ -27,6 +28,9 @@ export class CoinInfoComponent {
 
   constructor(public router: Router, public commonService: CommonService, public socketService: SocketService) {
     this.getCoin();
+    if (localStorage.getItem('token')) {
+      this.isLoggedIn = true;
+    }
   }
 
 

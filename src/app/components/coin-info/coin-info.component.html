@@ -1,5 +1,5 @@
 <div style="width:100%;text-align:center">
-  <button routerLink="/privatedata" class="ui success button">
+  <button *ngIf="isLoggedIn" routerLink="/privatedata" class="ui success button">
     private data
   </button>
   <button routerLink="/public-data" class="ui success button">

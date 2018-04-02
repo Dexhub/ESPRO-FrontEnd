@@ -16,6 +16,7 @@ export class PublicDataComponent {
   public coinError:string = '';
   public coins: any = [];
   public uiCoins: any = { data: {}, keys: [] };
+  public isLoggedIn: Boolean = false;
 
   public error:string = '';
   public assets: any = [];
@@ -42,6 +43,9 @@ export class PublicDataComponent {
   public pageNumbers:any = [];
 
   constructor(public router: Router, public commonService: CommonService, public socketService: SocketService) {
+    if (localStorage.getItem('token')) {
+      this.isLoggedIn = true;
+    }
     this.commonService.getMethod(`${apiUrl.user}/exchanges`)
     .then((data:any) => {
       this.exchanges = data.info.exchanges;

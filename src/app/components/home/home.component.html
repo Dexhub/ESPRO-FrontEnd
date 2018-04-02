@@ -1,8 +1,9 @@
+<p class="font-red" style="text-align:center"> &nbsp; &nbsp; &nbsp; &nbsp;{{error}}</p><br/>
+<p class="font-green" style="text-align:center"> &nbsp; &nbsp; &nbsp; &nbsp;{{message}}</p><br/>
 <div *ngIf="!user" class="card text-center">
-  <h6 class="card-header">Login</h6>
   <div class="col-lg-12 col-md-12" style="padding: 5px 20% 5px !important">
-    <span class="font-red"> &nbsp; &nbsp; &nbsp; &nbsp;{{error}}</span><br/>
     <form role="form" [formGroup]="signUpForm" (ngSubmit)="signUp(signUpForm.value)" *ngIf="formTag === 'signup'" class="text-left">
+      <h6 class="card-header">Sign up</h6>
       <div class="form-div1">
         <fieldset class="form-group">
           <label>Name</label>
@@ -25,11 +26,13 @@
         </fieldset>
       </div>
       <div class="heading">
+        <button class="btn btn-danger" (click)="changeFormTag('login')">cancel</button>
         <button type="submit" class="ui primary button marginTop22" [disabled]="signUpForm.controls.username.errors || signUpForm.controls.email.errors || signUpForm.controls.contact.errors || signUpForm.controls.password.errors">Signup</button>
       </div>
     </form>
 
     <form role="form" [formGroup]="loginForm" (ngSubmit)="login(loginForm.value)" *ngIf="formTag === 'login'" class="text-left">
+      <h6 class="card-header">Login</h6>
       <div class="form-div1">
         <fieldset class="form-group">
           <label>Email/Contact</label>
@@ -42,8 +45,42 @@
       </div>
       <div class="heading">
         <button type="submit" class="ui primary button marginTop22" [disabled]="loginForm.controls.username.errors || loginForm.controls.password.errors">Login</button>
+        <a class="btn btn-danger" *ngIf="formTag !== 'forgetPassword'" (click)="resetForgetPasswordForm()">forget password</a>
       </div>
     </form>
+
+    <form role="form" [formGroup]="forgetPasswordForm" (ngSubmit)="forgetPassword(forgetPasswordForm.value)" *ngIf="formTag === 'forgetPassword'" class="text-left">
+      <div class="form-div1">
+        <h6 class="card-header">Forget Password</h6>
+        <fieldset class="form-group">
+          <label>Email/Contact</label>
+          <input class="form-control" type="text" formControlName="username">
+        </fieldset>
+      </div>
+      <div class="heading">
+        <button type="submit" class="ui primary button marginTop22" [disabled]="forgetPasswordForm.controls.username.errors">Request Password</button>
+        <button class="btn btn-danger" (click)="changeFormTag('login')">cancel</button>
+      </div>
+    </form>
+
+    <form role="form" [formGroup]="resetPasswordForm" (ngSubmit)="resetPassword(resetPasswordForm.value)" *ngIf="formTag === 'resetPassword'" class="text-left">
+      <div class="form-div1">
+        <h6 class="card-header">Reset Password</h6>
+        <fieldset class="form-group">
+          <label>New Password</label>
+          <input class="form-control" type="password" formControlName="password">
+        </fieldset>
+        <fieldset class="form-group">
+          <label>Verification Code</label>
+          <input class="form-control" type="code" formControlName="code">
+        </fieldset>
+      </div>
+      <div class="heading">
+        <button type="submit" class="ui primary button marginTop22" [disabled]="resetPasswordForm.controls.password.errors || resetPasswordForm.controls.code.errors">Reset Password</button>
+        <button class="btn btn-danger" (click)="changeFormTag('login')">cancel</button>
+      </div>
+    </form>
+
   </div>
   <div class="card-block">
      <button class="btn btn-social-icon btn-google" (click)="signInWithGoogle()">
@@ -52,17 +89,45 @@
      <button class="btn btn-social-icon btn-facebook" (click)="signInWithFacebook()">
        <span class="fa fa-facebook"></span>
      </button>
-     <button class="ui primary button" (click)="formTag = (formTag === 'signup') ? 'login' : 'signup'">{{ (formTag === 'signup') ? 'existing user?' : 'new user?'}}</button>
+     <span *ngIf="formTag === 'login' || formTag === 'signup'">
+       <button class="ui primary button" *ngIf="formTag !== 'login'" (click)="changeFormTag('login')">existing user</button>
+       <button class="ui primary button" *ngIf="formTag !== 'signup'" (click)="changeFormTag('signup')">new user?</button>
+    </span>
   </div>
 </div>
 <div *ngIf="user && user !== null" class="card text-center">
-  <div class="card-block">
+  <div class="card-block" *ngIf="!editProfile">
     <h4 class="card-title text-align">{{ user.name }}</h4>
     <p class="card-text text-align">{{ user.email }}</p>
     <p class="card-text text-align">{{ user.contact }}</p>
   </div>
+  <div class="col-lg-12 col-md-12" style="padding: 5px 20% 5px !important">
+      <div class="form-div1 text-left" *ngIf="editProfile">
+        <form role="form" [formGroup]="editProfileForm" (ngSubmit)="updateUserDetails(editProfileForm.value)" *ngIf="formTag === 'login'" class="text-left">
+          <fieldset class="form-group">
+            <label>Name</label>
+            <input class="form-control" type="text" formControlName="username">
+          </fieldset>
+          <fieldset class="form-group">
+            <label>Email</label>
+            <input class="form-control" type="email" formControlName="email">
+          </fieldset>
+          <fieldset class="form-group">
+            <label>Contact</label>
+            <input class="form-control" type="text" formControlName="contact">
+          </fieldset>
+          <div class="heading">
+            <button type="submit" class="ui primary button marginTop22" [disabled]="editProfileForm.controls.username.errors || editProfileForm.controls.email.errors || editProfileForm.controls.contact.errors">
+              Update Details
+            </button>
+            <button class="btn btn-danger" (click)="editProfile = false">cancel</button>
+          </div>
+        </form>
+      </div>
+  </div>
   <div class="card-block">
     <button class="btn btn-danger" (click)="signOut()">Sign out</button>
+    <button class="btn btn-primary" *ngIf="!editProfile" (click)="initiateEditProfileForm()">Edit Profile</button>
     <button class="ui success button" routerLink="/privatedata">My Trades</button>
   </div>
 </div>
