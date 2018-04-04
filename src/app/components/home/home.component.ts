@@ -28,6 +28,7 @@ export interface UserDataResponse {
 export class HomeComponent {
   public user;
   public isLoggedInFromProvider;
+  public isLoggedIn = false;
   public isLoading = true;
   public signUpForm: FormGroup;
   public loginForm: FormGroup;
@@ -48,6 +49,9 @@ export class HomeComponent {
 
   ngOnInit() {
     this.socketService.disconnect();
+    if (localStorage.getItem('token')) {
+      this.isLoggedIn = true;
+    }
     this.auth.authState.subscribe((user) => {
       this.isLoggedInFromProvider = user;
       if (user) {
@@ -199,6 +203,7 @@ export class HomeComponent {
   }
   signOut(): void {
    this.resetErrorSuccessMsg();
+   this.isLoggedIn = false;
    localStorage.removeItem('token');
    localStorage.removeItem('is2FAEnabled');
    this.user = null;
@@ -270,6 +275,7 @@ export class HomeComponent {
   }
 
   processLogin(data:any) {
+    this.isLoggedIn = true;
     if (data.status && data.info && data.info.token) {
       localStorage.setItem('token', data.info.token);
       localStorage.setItem('is2FAEnabled', data.info.is2FAEnabled);
@@ -413,7 +419,6 @@ export class HomeComponent {
       if (data.alertType === 'specificTime') {
         const offset = new Date().getTimezoneOffset();
         const newDate = this.addMinutes(new Date(`${moment().format('YYYY-MM-DD')} ${data.changeTime}`), offset);
-        console.log(newDate, data.changeTime, offset);
         let minutes = newDate.getMinutes();
         data.changeTime = `${newDate.getHours()}:${(minutes.toString().length === 1) ? '0' + minutes : minutes}`;
         data.changeValue = 0;
@@ -456,11 +461,10 @@ export class HomeComponent {
             return sub.id == data.subscriptionId;
           });
           this.subscriptions[index] = res.info.subscription;
-          console.log(res.info.subscription, this.subscriptions[index])
         }
       })
       .catch((error) => {
-        console.log('subscription error', error);
+        this.processError(error);
       });
     }
   }
@@ -470,12 +474,11 @@ export class HomeComponent {
     if (data) {
       this.commonService.postMethod(data, `${apiUrl.user}/subscribe`)
       .then((res: any) => {
-        console.log(res);
         this.resetSubscriptionForm();
         this.subscriptions.push(res.info.notification);
       })
       .catch((error) => {
-        console.log('subscription error', error);
+        this.processError(error);
       });
     }
   }
@@ -512,7 +515,17 @@ export class HomeComponent {
       }
     })
     .catch((error) => {
-      console.log(error)
+      this.processError(error);
+    });
+  }
+
+  deleteSubscription(index) {
+    this.commonService.deleteMethod(`${apiUrl.user}/subscription?id=${this.subscriptions[index].id}`)
+    .then((subscriptions: any) => {
+      this.subscriptions.splice(index, 1);
+    })
+    .catch((error) => {
+      this.processError(error);
     });
   }
 }

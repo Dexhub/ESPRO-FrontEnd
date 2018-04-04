@@ -31,6 +31,17 @@ export class CommonService {
     });
   }
 
+  deleteMethod(url:string) {
+    return new Promise((resolve, reject) => {
+      const headers = this.authService.getHeaders();
+      this.http.delete(url, { headers: headers })
+        .subscribe(
+          (res: Response) => { resolve(res.json()); },
+          (error) => { reject(error.json()); }
+        );
+    });
+  }
+
   getMethod(url:string) {
     return new Promise((resolve, reject) => {
       const headers = this.authService.getHeaders();

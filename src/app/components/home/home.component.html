@@ -1,6 +1,6 @@
 <p class="font-red" style="text-align:center"> &nbsp; &nbsp; &nbsp; &nbsp;{{error}}</p><br/>
 <p class="font-green" style="text-align:center"> &nbsp; &nbsp; &nbsp; &nbsp;{{message}}</p><br/>
-<div *ngIf="!user" class="card text-center">
+<div *ngIf="!isLoggedIn" class="card text-center">
   <div class="col-lg-12 col-md-12" style="padding: 5px 20% 5px !important">
     <form role="form" [formGroup]="signUpForm" *ngIf="formTag === 'signup'" class="text-left">
       <h6 class="card-header">Sign up</h6>
@@ -227,6 +227,7 @@
                 <th>Change Value</th>
                 <th>Change Time</th>
                 <th>Base Value</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -238,6 +239,9 @@
                   <td>{{subscription.changeValue}}</td>
                   <td>{{changeTimeToLocal(subscription.changeTime, subscription.alertType)}}</td>
                   <td>{{subscription.baseValue}}</td>
+                  <td>
+                    <button type="button" class="btn btn-danger" (click)="deleteSubscription(i)"><i class="fa fa-trash"></i></button>
+                  </td>
                 </tr>
               </ng-container>
             </tbody>
