@@ -2,7 +2,7 @@
 <p class="font-green" style="text-align:center"> &nbsp; &nbsp; &nbsp; &nbsp;{{message}}</p><br/>
 <div *ngIf="!user" class="card text-center">
   <div class="col-lg-12 col-md-12" style="padding: 5px 20% 5px !important">
-    <form role="form" [formGroup]="signUpForm" (ngSubmit)="signUp(signUpForm.value)" *ngIf="formTag === 'signup'" class="text-left">
+    <form role="form" [formGroup]="signUpForm" *ngIf="formTag === 'signup'" class="text-left">
       <h6 class="card-header">Sign up</h6>
       <div class="form-div1">
         <fieldset class="form-group">
@@ -26,8 +26,8 @@
         </fieldset>
       </div>
       <div class="heading">
-        <button class="btn btn-danger" (click)="changeFormTag('login')">cancel</button>
-        <button type="submit" class="ui primary button marginTop22" [disabled]="signUpForm.controls.username.errors || signUpForm.controls.email.errors || signUpForm.controls.contact.errors || signUpForm.controls.password.errors">Signup</button>
+        <button type="button" class="btn btn-danger" (click)="changeFormTag('login')">cancel</button>
+        <button type="submit" (click)="signUp(signUpForm.value)" class="ui primary button marginTop22" [disabled]="signUpForm.controls.username.errors || signUpForm.controls.email.errors || signUpForm.controls.contact.errors || signUpForm.controls.password.errors">Signup</button>
       </div>
     </form>
 
@@ -41,6 +41,10 @@
         <fieldset class="form-group">
           <label>Password</label>
           <input class="form-control" type="password" formControlName="password">
+        </fieldset>
+        <fieldset class="form-group">
+          <label>Verification Code(if 2FA enabled, ignore if not enabled)</label>
+          <input class="form-control" type="text" formControlName="code">
         </fieldset>
       </div>
       <div class="heading">
@@ -72,7 +76,7 @@
         </fieldset>
         <fieldset class="form-group">
           <label>Verification Code</label>
-          <input class="form-control" type="code" formControlName="code">
+          <input class="form-control" type="text" formControlName="code">
         </fieldset>
       </div>
       <div class="heading">
@@ -96,14 +100,25 @@
   </div>
 </div>
 <div *ngIf="user && user !== null" class="card text-center">
-  <div class="card-block" *ngIf="!editProfile">
+  <div class="card-block" *ngIf="formTag === 'login'">
     <h4 class="card-title text-align">{{ user.name }}</h4>
     <p class="card-text text-align">{{ user.email }}</p>
     <p class="card-text text-align">{{ user.contact }}</p>
   </div>
-  <div class="col-lg-12 col-md-12" style="padding: 5px 20% 5px !important">
-      <div class="form-div1 text-left" *ngIf="editProfile">
-        <form role="form" [formGroup]="editProfileForm" (ngSubmit)="updateUserDetails(editProfileForm.value)" *ngIf="formTag === 'login'" class="text-left">
+  <div style="text-align:center" *ngIf="formTag === 'enable2FA' && qrCodeImage !== '' && !user.is2FAEnabled">
+    <img src="{{qrCodeImage}}"/>
+    <fieldset class="form-group" style="width:60%;margin-left:20%">
+      <label>Verification Code</label>
+      <input class="form-control" type="text" [(ngModel)]="code">
+    </fieldset>
+    <div class="heading">
+      <button type="submit" class="ui primary button marginTop22" [disabled]="code === ''" (click)="enable2FA()">Verify</button>
+      <button class="btn btn-danger" (click)="changeFormTag('login')">cancel</button>
+    </div>
+  </div>
+  <div class="col-lg-12 col-md-12" style="padding: 5px 20% 5px !important" *ngIf="formTag === 'editProfile'">
+      <div class="form-div1 text-left">
+        <form role="form" [formGroup]="editProfileForm" (ngSubmit)="updateUserDetails(editProfileForm.value)" *ngIf="formTag === 'editProfile'" class="text-left">
           <fieldset class="form-group">
             <label>Name</label>
             <input class="form-control" type="text" formControlName="username">
@@ -120,15 +135,127 @@
             <button type="submit" class="ui primary button marginTop22" [disabled]="editProfileForm.controls.username.errors || editProfileForm.controls.email.errors || editProfileForm.controls.contact.errors">
               Update Details
             </button>
-            <button class="btn btn-danger" (click)="editProfile = false">cancel</button>
+            <button class="btn btn-danger" (click)="formTag = 'login'">cancel</button>
           </div>
         </form>
       </div>
   </div>
+  <div *ngIf="formTag === 'notifications'">
+    <h3 class="heading">Subscribe to notification</h3>
+    <p class="font-red"> &nbsp; &nbsp; &nbsp; &nbsp;{{subscriptionError}}</p><br/>
+      <div class="col-lg-12 col-md-12" style="display:flex">
+        <div class="col-lg-4 col-md-4" style="display:flex">
+          <form role="form" [formGroup]="subscriptionForm" (ngSubmit)="onSubmitSubscription(subscriptionForm.value)" *ngIf="subscriptionFormType === 'add'">
+            <div class="form-div1">
+              <fieldset class="form-group">
+                <label>Coin</label>
+                <select class="ui default button" formControlName="coinTicker">
+                  <option value="">Select Coin</option>
+                  <option *ngFor="let coin of coinsList" value="{{coin.symbol}}">{{coin.symbol}}({{coin.name}})</option>
+                </select>
+              </fieldset>
+              <fieldset class="form-group">
+                <label>Alert Types</label>
+                <select class="ui default button" formControlName="alertType">
+                  <option value="">Select Alert Type</option>
+                  <option *ngFor="let alertType of alertTypes" value="{{alertType.key}}">{{alertType.value}}</option>
+                </select>
+              </fieldset>
+              <fieldset class="form-group" [ngClass]="subscriptionForm.value.alertType !== 'specificTime' ? 'form-group' : 'hidden'">
+                <label>Change Value</label>
+                <input class="form-control" type="number" formControlName="changeValue">
+              </fieldset>
+              <fieldset [ngClass]="subscriptionForm.value.alertType === 'specificTime' ? 'form-group' : 'hidden'">
+                <p *ngIf="this.subscriptionForm.controls.changeTime.errors" class="font-red">Invalid time format</p>
+                <label>Send alert at this time every day : (24 hour format) </label>
+                <input class="form-control" type="text" formControlName="changeTime">
+              </fieldset>
+            </div>
+            <div class="heading">
+              <button type="submit" class="ui primary button marginTop22">Add</button>
+              <button type="button" class="ui button" (click)="changeSubscriptionFormTypeToUpdate()">or, edit an existing subscription</button>
+            </div>
+          </form>
+
+          <form role="form" [formGroup]="subscriptionUpdateForm" (ngSubmit)="onSubmitSubscriptionUpdate(subscriptionUpdateForm.value)" *ngIf="subscriptionFormType === 'update'">
+            <div class="form-div1">
+              <fieldset class="form-group">
+                <label>Edit Subscription</label>
+                <select (change)="setSubToUpdate()" [(ngModel)]="subscriptionId" class="ui default button" formControlName="coinTicker">
+                  <option value="">Select subscription</option>
+                  <option *ngFor="let subscription of subscriptions" value="{{subscription.id}}"
+                  [ngClass]="subscription.alertType === 'specificTime' ? 'hidden' : ''">Edit Subscription {{subscription.id}}</option>
+                </select>
+              </fieldset>
+              <fieldset class="form-group">
+                <label>Coin</label>
+                <select class="ui default button" formControlName="coinTicker">
+                  <option value="">Select Coin</option>
+                  <option *ngFor="let coin of coinsList" value="{{coin.symbol}}">{{coin.symbol}}({{coin.name}})</option>
+                </select>
+              </fieldset>
+              <fieldset class="form-group">
+                <label>Alert Types</label>
+                <select class="ui default button" formControlName="alertType">
+                  <option value="">Select Alert Type</option>
+                  <option *ngFor="let alertType of alertTypes" value="{{alertType.key}}">{{alertType.value}}</option>
+                </select>
+              </fieldset>
+              <fieldset class="form-group" [ngClass]="subscriptionUpdateForm.value.alertType !== 'specificTime' ? 'form-group' : 'hidden'">
+                <label>Change Value</label>
+                <input class="form-control" type="number" formControlName="changeValue">
+              </fieldset>
+              <fieldset [ngClass]="subscriptionUpdateForm.value.alertType === 'specificTime' ? 'form-group' : 'hidden'">
+                <label>Send alert at this time every day : (24 hour format) </label>
+                <input class="form-control" type="text" formControlName="changeTime">
+              </fieldset>
+            </div>
+            <div class="heading">
+              <button type="submit" class="ui primary button marginTop22">Update</button>
+              <button type="button" class="ui button" (click)="changeSubscriptionFormTypeToAdd()">or, add a new subscription</button>
+            </div>
+          </form>
+        </div>
+        <div class="col-lg-8 col-md-8">
+          <h5 class="heading">Your Subscriptions <button class="ui primary button action" (click)="getMySubscriptions()"><i class="fa fa-refresh"></i></button> </h5><br/>
+          <table class="table" *ngIf="subscriptions[0]">
+            <thead>
+              <tr>
+                <th>Id</th>
+                <th>Coin ticker</th>
+                <th>Subscrition<br/>Type</th>
+                <th>Change Value</th>
+                <th>Change Time</th>
+                <th>Base Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let subscription of subscriptions; let i = index">
+                <tr *ngIf="subscription">
+                  <td>{{subscription.id}}</td>
+                  <td>{{subscription.coinTicker}}</td>
+                  <td>{{subscription.alertType}}</td>
+                  <td>{{subscription.changeValue}}</td>
+                  <td>{{changeTimeToLocal(subscription.changeTime, subscription.alertType)}}</td>
+                  <td>{{subscription.baseValue}}</td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <button class="btn btn-danger" (click)="hideNotifications()">close</button>
+  </div>
+
   <div class="card-block">
     <button class="btn btn-danger" (click)="signOut()">Sign out</button>
-    <button class="btn btn-primary" *ngIf="!editProfile" (click)="initiateEditProfileForm()">Edit Profile</button>
+    <button class="btn btn-primary" *ngIf="formTag !== 'editProfile'" (click)="initiateEditProfileForm()">Edit Profile</button>
+    <button class="btn btn-primary" *ngIf="!user.isEmailVerified" (click)="requestVerificationLink('email')">Verify Email</button>
+    <button class="btn btn-primary" *ngIf="user.contact && user.contact !== '' && !user.isContactVerified" (click)="requestVerificationLink('contact')">Verify Contact</button>
+    <button class="btn btn-primary" [disabled]="!user.isEmailVerified" (click)="showNotifications()">Notifications</button>
+    <button class="btn btn-primary" *ngIf="!user.is2FAEnabled && formTag !== 'enable2FA'" (click)="enable2FARequest()">Enable 2FA</button>
     <button class="ui success button" routerLink="/privatedata">My Trades</button>
+    <button class="btn btn-primary" [disabled]="!user.is2FAEnabled" routerLink="/execute-trade">Execute Trade</button>
   </div>
 </div>
 <div style="width:100%;text-align:center">

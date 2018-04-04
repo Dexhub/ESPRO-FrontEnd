@@ -62,8 +62,6 @@ export interface AggregateAmount {
 })
 export class UsersComponent {
   public form: FormGroup;
-  public subscriptionForm: FormGroup;
-  public subscriptionUpdateForm: FormGroup;
   public error:string = '';
   public userIdError:string = '';
   public user:any = {};
@@ -79,26 +77,15 @@ export class UsersComponent {
   public portfolio:any = {};
   public pageNumbers: any = [];
   public socketData: any = {};
-  public coinsList: any = [];
-  public subscriptionFormType: string = 'add';
   public totalPortFolio = 0;
-  public alertTypes: any = [
-    { key: 'percentagePriceChange', value: 'Percentage price change' },
-		{ key: 'percentageVolumeChange', value: 'Percentage volume change' },
-		{ key: 'specificPrice', value: 'Specific price' },
-    { key: 'percentagePortfolioChange', value: 'Percentage portfolio change' },
-		{ key: 'specificTime', value: 'Specific time' }
-  ];
   public dtOptions: DataTables.Settings = {
      paging: true,
      pagingType: 'simple',
      autoWidth: true
    };
-  public subscriptions: any = [];
   constructor(public router: Router, public commonService: CommonService, private route: ActivatedRoute, public socketService: SocketService) {
     this.getMyProfile();
     this.resetForm();
-    this.resetSubscriptionForm();
     this.commonService.getMethod(`${apiUrl.user}/exchanges`)
     .then((data:{ status: Boolean, info: { exchanges: Array<Exchange> } }) => {
       this.exchanges = data.info.exchanges;
@@ -111,8 +98,6 @@ export class UsersComponent {
       this.getTradesHistory();
       this.getAggregationAmount();
       this.getPortFolio();
-      this.getCoinsList();
-      this.getMySubscriptions();
     });
   }
 
@@ -204,16 +189,6 @@ export class UsersComponent {
       });
     }
 
-    getCoinsList() {
-      this.commonService.getMethod(`${apiUrl.coinsid}`)
-      .then((res:any) => {
-        if (res.status) {
-          this.coinsList = res.info.coins;
-          this.coinsList = _.orderBy(this.coinsList, ['symbol'], ['asc']);
-        }
-      });
-    }
-
     getPortFolio() {
       this.portfolio = { change1d: {}, percentageContribution: [], portfolioData: [], percentageContributionObj: { data: {}, keys: [] } };
       this.commonService.getMethod(`${apiUrl.portfolio}/fetch`)
@@ -275,40 +250,6 @@ export class UsersComponent {
       });
     }
 
-    public subscriptionError: string = '';
-    resetSubscriptionForm() {
-      this.subscriptionForm = new FormGroup({
-        coinTicker: new FormControl('', [
-          Validators.required
-        ]),
-        alertType: new FormControl('', [
-          Validators.required
-        ]),
-        changeValue: new FormControl('', [
-          Validators.required
-        ]),
-        changeTime: new FormControl('', [
-          Validators.pattern(/^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/)
-        ])
-      });
-
-      this.subscriptionUpdateForm = new FormGroup({
-        subscriptionId: new FormControl('', [
-          Validators.required
-        ]),
-        coinTicker: new FormControl('', [
-          Validators.required
-        ]),
-        alertType: new FormControl('', [
-          Validators.required
-        ]),
-        changeValue: new FormControl('', [
-          Validators.required
-        ]),
-        changeTime: new FormControl('')
-      });
-    }
-
     numberFormat(value:number) {
       if (value) {
         if (value % 1 === 0) {
@@ -337,30 +278,6 @@ export class UsersComponent {
       }
     }
 
-    validateSubscriptionData(data:any) {
-      this.subscriptionError = '';
-      if (data.coinTicker === '') {
-        this.subscriptionError = 'please select coin';
-        return false;
-      } else if (data.alertType === '') {
-        this.subscriptionError = 'please select alert type';
-        return false;
-      } else if (data.alertType !== 'specificTime' && (data.changeValue === '' || isNaN(data.changeValue))) {
-        this.subscriptionError = 'please provide a valid change value';
-        return false;
-      } else {
-        if (data.alertType === 'specificTime') {
-          const offset = new Date().getTimezoneOffset();
-          const newDate = this.addMinutes(new Date(`${moment().format('YYYY-MM-DD')} ${data.changeTime}`), offset);
-          console.log(newDate, data.changeTime, offset);
-          let minutes = newDate.getMinutes();
-          data.changeTime = `${newDate.getHours()}:${(minutes.toString().length === 1) ? '0' + minutes : minutes}`;
-          data.changeValue = 0;
-        }
-        return data;
-      }
-    }
-
     onSubmit(data: UserInfoData) {
       this.validateUserInfoData(data);
       if (this.error === '') {
@@ -380,101 +297,6 @@ export class UsersComponent {
           this.error = error.errormessage;
         })
       }
-    }
-
-    public subscriptionId: any = '';
-    setSubToUpdate() {
-      const index = _.findIndex(this.subscriptions, (sub) => {
-        return sub.id == this.subscriptionId;
-      });
-      console.log(this.subscriptions[index]);
-      this.subscriptionUpdateForm = new FormGroup({
-        subscriptionId: new FormControl(this.subscriptions[index].id, [
-          Validators.required
-        ]),
-        coinTicker: new FormControl(this.subscriptions[index].coinTicker, [
-          Validators.required
-        ]),
-        alertType: new FormControl(this.subscriptions[index].alertType, [
-          Validators.required
-        ]),
-        changeValue: new FormControl(this.subscriptions[index].changeValue, [
-          Validators.required
-        ]),
-        changeTime: new FormControl(this.changeTimeToLocal(this.subscriptions[index].changeTime, this.subscriptions[index].alertType), [
-          Validators.pattern(/^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/)
-        ])
-      });
-    }
-    onSubmitSubscriptionUpdate(data) {
-      data = this.validateSubscriptionData(data);
-      console.log(data);
-      if (data) {
-        this.commonService.putMethod(data, `${apiUrl.user}/subscribe/${data.subscriptionId}`)
-        .then((res: any) => {
-          if (res.status) {
-            this.resetSubscriptionForm();
-            const index = _.findIndex(this.subscriptions, (sub) => {
-              return sub.id == data.subscriptionId;
-            });
-            this.subscriptions[index] = res.info.subscription;
-            console.log(res.info.subscription, this.subscriptions[index])
-          }
-        })
-        .catch((error) => {
-          console.log('subscription error', error);
-        });
-      }
-    }
-    onSubmitSubscription(data:any) {
-      data = this.validateSubscriptionData(data);
-      console.log(data);
-      if (data) {
-        this.commonService.postMethod(data, `${apiUrl.user}/subscribe`)
-        .then((res: any) => {
-          console.log(res);
-          this.resetSubscriptionForm();
-          this.subscriptions.push(res.info.notification);
-        })
-        .catch((error) => {
-          console.log('subscription error', error);
-        });
-      }
-    }
-
-    changeTimeToLocal(time, alertType) {
-      if (alertType === 'specificTime') {
-        const offset = new Date().getTimezoneOffset();
-        const newDate = this.addMinutes(new Date(`${moment().format('YYYY-MM-DD')} ${time}`), -offset);
-        let minutes = newDate.getMinutes();
-        return `${newDate.getHours()}:${(minutes.toString().length === 1) ? '0' + minutes : minutes}`;
-      }
-    }
-
-    addMinutes(date:any, minutes:any) {
-      const date2 = new Date(date);
-      date2.setMinutes(date2.getMinutes() + minutes);
-      return date2;
-    }
-
-    changeSubscriptionFormTypeToUpdate() {
-      this.subscriptionFormType = 'update';
-    }
-
-    changeSubscriptionFormTypeToAdd() {
-      this.subscriptionFormType = 'add';
-    }
-
-    getMySubscriptions() {
-      this.commonService.getMethod(`${apiUrl.user}/subscriptions`)
-      .then((subscriptions: any) => {
-        if (subscriptions.status) {
-          this.subscriptions = subscriptions.info.subscriptions;
-        }
-      })
-      .catch((error) => {
-        console.log(error)
-      });
     }
 
     syncBalance(exchangeId:number) {

@@ -3,14 +3,14 @@ import { NgModule } from '@angular/core';
 import { HttpModule } from '@angular/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { AuthService as AuthServiceSocial, SocialLoginModule } from 'angular4-social-login';
+import { AuthService as AuthServiceSocial, SocialLoginModule, AuthServiceConfig } from 'angular4-social-login';
 import { AppComponent } from './app.component';
 import { HomeComponent, UsersComponent, PublicDataComponent, CoinInfoComponent, LoginComponent } from './components';
 import { CommonService, AuthService, SocketService } from './services';
 import { AppRoutingModule } from './app-routing.module';
 import { ChartsModule } from 'ng2-charts/ng2-charts';
 import { DataTablesModule } from 'angular-datatables';
-import { authServiceConfig } from './constants/constants';
+import { provideConfig } from './constants/constants';
 
 @NgModule({
   declarations: [
@@ -29,9 +29,12 @@ import { authServiceConfig } from './constants/constants';
     AppRoutingModule,
     ChartsModule,
     DataTablesModule,
-    SocialLoginModule.initialize(authServiceConfig)
+    SocialLoginModule
   ],
-  providers: [CommonService, AuthService, SocketService, AuthServiceSocial],
+  providers: [CommonService, AuthService, SocketService, AuthServiceSocial, {
+      provide: AuthServiceConfig,
+      useFactory: provideConfig
+    }],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

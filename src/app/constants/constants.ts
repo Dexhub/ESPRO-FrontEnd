@@ -33,13 +33,15 @@ export const apiUrl = {
   coinsid: `${constants.API_URL}/coinsid`,
 }
 
-export const authServiceConfig = new AuthServiceConfig([
-  {
-    id: GoogleLoginProvider.PROVIDER_ID,
-    provider: new GoogleLoginProvider("864084211126-6mp7rq070geovl35v6afdhhbq8rg97s0.apps.googleusercontent.com")
-  },
-  {
-    id: FacebookLoginProvider.PROVIDER_ID,
-    provider: new FacebookLoginProvider("1330643750399864")
-  }
-])
+export function provideConfig() {
+  return new AuthServiceConfig([
+    {
+      id: GoogleLoginProvider.PROVIDER_ID,
+      provider: new GoogleLoginProvider("864084211126-6mp7rq070geovl35v6afdhhbq8rg97s0.apps.googleusercontent.com")
+    },
+    {
+      id: FacebookLoginProvider.PROVIDER_ID,
+      provider: new FacebookLoginProvider("1330643750399864")
+    }
+  ]);
+}
