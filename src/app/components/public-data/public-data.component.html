@@ -41,6 +41,7 @@
                 <th>Change(1D)</th>
                 <th>Change(24H)</th>
                 <th>Change(1W)</th>
+                <th>7 day price</th>
               </tr>
             </thead>
             <tbody>
@@ -60,6 +61,7 @@
                   <td>{{numberFormat(uiCoins.data[coinSymbol].percent_change_1h) || 0}}</td>
                   <td>{{numberFormat(uiCoins.data[coinSymbol].percent_change_24h) || 0}}</td>
                   <td>{{numberFormat(uiCoins.data[coinSymbol].percent_change_7d) || 0}}</td>
+                  <td><img src="http://s3.amazonaws.com/d3-charts/{{uiCoins.data[coinSymbol].symbol}}.svg" style="width:200px;height:70px"/></td>
                 </tr>
               </ng-container>
             </tbody>

@@ -43,8 +43,6 @@ export class HomeComponent {
 
   constructor(public router: Router, public commonService: CommonService, public socketService: SocketService, private auth: AuthService) {
     this.resetForm();
-    this.getCoinsList();
-    this.getMySubscriptions();
   }
 
   ngOnInit() {
@@ -127,6 +125,7 @@ export class HomeComponent {
           isContactVerified: profileData.info.user.isContactVerified,
           is2FAEnabled: profileData.info.user.is2FAEnabled,
         };
+        localStorage.setItem('is2FAEnabled', profileData.info.user.is2FAEnabled);
       }
     }).catch((err) => {
       this.processError(err);
@@ -197,20 +196,28 @@ export class HomeComponent {
     this.resetErrorSuccessMsg();
     this.auth.signIn(GoogleLoginProvider.PROVIDER_ID);
   }
+
   signInWithFacebook() {
     this.resetErrorSuccessMsg();
     this.auth.signIn(FacebookLoginProvider.PROVIDER_ID);
   }
+
   signOut(): void {
    this.resetErrorSuccessMsg();
    this.isLoggedIn = false;
    localStorage.removeItem('token');
    localStorage.removeItem('is2FAEnabled');
    this.user = null;
+   this.qrCodeImage = '';
+   this.code = '';
+   this.coinsList = [];
+   this.subscriptionId = '';
+   this.subscriptions = [];
    if (this.isLoggedInFromProvider) {
      this.auth.signOut();
    }
   }
+
   resetForm() {
     this.signUpForm = new FormGroup({
       username: new FormControl('', [
@@ -237,6 +244,7 @@ export class HomeComponent {
       code: new FormControl(''),
     });
   }
+
   signUp(data:any) {
     this.resetErrorSuccessMsg();
     this.commonService.postMethod(data, `${apiUrl.user}/signup`)
@@ -288,6 +296,8 @@ export class HomeComponent {
         is2FAEnabled: data.info.is2FAEnabled
       };
       this.resetForm();
+      this.getCoinsList();
+      this.getMySubscriptions();
     } else {
       this.error = data.info.message;
     }

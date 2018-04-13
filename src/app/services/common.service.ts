@@ -52,4 +52,14 @@ export class CommonService {
         );
     });
   }
+
+  getGdaxProducts() {
+    return new Promise((resolve, reject) => {
+      this.http.get('https://api.gdax.com/products')
+        .subscribe(
+          (res: Response) => { resolve(res.json()); },
+          (error) => { reject(error.json()); }
+        );
+    });
+  }
 }

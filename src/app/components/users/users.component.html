@@ -50,6 +50,7 @@
       <table class="table" datatable="ng" [dtOptions]="dtOptions" *ngIf="userAccounts[0]">
         <thead>
           <tr>
+            <th>Account Name</th>
             <th>Exchange</th>
             <th>Api Key</th>
             <th>Secret</th>
@@ -59,16 +60,17 @@
         <tbody>
           <ng-container *ngFor="let account of userAccounts; let i = index">
             <tr>
+              <td>{{account.accountName}}</td>
               <td>{{account.exchangeName}}</td>
               <td><input class="form-control" value="{{account.apiKey}}" [disabled]="true"></td>
               <td><input class="form-control" value="{{account.secret}}" [disabled]="true"></td>
               <td>
-                <button class="ui primary button action" (click)="syncBalance(account.exchangeId)"
-                  [disabled]="balanceSync[account.exchangeId]">
+                <button class="ui primary button action" (click)="syncBalance(account.exchangeId, account.userAccountId)"
+                  [disabled]="balanceSync[account.userAccountId]">
                   sync balance
                 </button>
-                <button class="ui success button action" (click)="syncTradeHistory(account.exchangeId)"
-                  [disabled]="tradesSync[account.exchangeId]">
+                <button class="ui success button action" (click)="syncTradeHistory(account.exchangeId, account.userAccountId)"
+                  [disabled]="tradesSync[account.userAccountId]">
                   sync trades history
                 </button>
               </td>
@@ -85,12 +87,15 @@
       <thead>
         <tr>
           <th>Trade Id</th>
+          <th>Order Id</th>
           <th>Exchange</th>
           <th>Symbol Pair</th>
           <th>Trade Type</th>
-          <th>Trade Price</th>
-          <th>Trade Size</th>
+          <th>Price Per<br/>Unit(USD)</th>
+          <th>Base Symbol<br/> Size</th>
+          <th>Total Base <br/>Price(USD)</th>
           <th>Trade Fee</th>
+          <th>Total Cose<br/>(with fee)</th>
           <th>Trade Term</th>
           <th>Timestamp</th>
         </tr>
@@ -99,12 +104,15 @@
         <ng-container *ngFor="let trade of trades; let i = index">
           <tr>
             <td>{{trade.tradeId}}</td>
+            <td>{{trade.orderId}}</td>
             <td>{{trade.exchangeName}}</td>
             <td>{{trade.symbolPair}}</td>
             <td>{{trade.tradeType}}</td>
             <td>{{numberFormat(trade.tradePrice)}}</td>
             <td>{{numberFormat(trade.tradeSize)}}</td>
+            <td>{{numberFormat(trade.tradePrice * trade.tradeSize)}}</td>
             <td>{{numberFormat(trade.tradeFee)}}</td>
+            <td>{{numberFormat(trade.tradeFee + (trade.tradePrice * trade.tradeSize))}}</td>
             <td>{{trade.tradeTerm}}</td>
             <td>{{trade.timestamp}}</td>
           </tr>
@@ -114,27 +122,31 @@
   </div>
 
   <div class="col-lg-12 col-md-12" style="display:flex">
-    <div class="col-lg-6">
-      <div *ngIf="userForm === 'show'" style="margin-top:100px">
-        <h5>Email: {{user.email}}</h5>
-        <h5>Contact: {{user.contact}}</h5>
-        <button type="button" class="ui button marginTop22" (click)="userForm = (userForm === 'show') ? 'edit' : 'show'">Edit your details</button>
-      </div>
-      <div>
-        <div class="form-div1" *ngIf="userForm === 'edit'">
-          <fieldset class="form-group">
-            <label>Email</label>
-            <input class="form-control" type="text" [(ngModel)]="user.email">
-          </fieldset>
-          <fieldset class="form-group">
-            <label>Contact</label>
-            <input class="form-control" type="text" [(ngModel)]="user.contact">
-          </fieldset>
-          <div class="heading">
-            <button type="button" class="ui primary button marginTop22" (click)="updateUserDetails()">Update Details</button>
-        </div>
-        </div>
-      </div>
+    <div class="col-lg-6 col-md-6">
+      <h5 class="heading">Coins Contribution in overall portfolio</h5>
+      <table class="table" *ngIf="portfolio.percentageContributionObj && portfolio.percentageContributionObj.keys[0]" datatable="ng" [dtOptions]="dtOptions">
+        <thead>
+          <tr>
+            <th>Coin ticker</th>
+            <th>Total Units</th>
+            <th>Price Per Unit<br/>(in USD)</th>
+            <th>total balance<br/>(in USD)</th>
+            <th>Percentage <br/> in total portfolio</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let key of portfolio.percentageContributionObj.keys; let i = index">
+            <tr>
+              <td>{{portfolio.percentageContributionObj.data[key].coinTicker}}</td>
+              <td>{{numberFormat(portfolio.percentageContributionObj.data[key].totalUnits)}}</td>
+              <td class="{{portfolio.percentageContributionObj.data[key].priceClass}}">{{numberFormat(portfolio.percentageContributionObj.data[key].priceOfOneUnit)}}</td>
+              <td class="{{portfolio.percentageContributionObj.data[key].priceClass}}">{{numberFormat(portfolio.percentageContributionObj.data[key].totalBalanceInUsd)}}</td>
+              <td class="{{portfolio.percentageContributionObj.data[key].priceClass}}">{{portfolio.percentageContributionObj.data[key].percentage}}</td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+      <h5>Total Portfolio (USD) : <b>{{totalPortFolio}}</b></h5>
     </div>
     <div class="col-lg-6 col-md-6" style="border-left: 1px solid black">
         <h5 class="heading">Aggregate Amount <button class="ui primary button action" (click)="getAggregationAmount()"><i class="fa fa-refresh"></i></button> </h5>
@@ -168,33 +180,7 @@
 <div style="display:block">
   <h3 class="heading">PortFolio  <button class="ui primary button action" (click)="getPortFolio()"><i class="fa fa-refresh"></i></button></h3>
   <div class="col-lg-12 col-md-12" style="display:flex">
-    <div class="col-lg-6 col-md-6">
-      <h5 class="heading">Coins Contribution in overall portfolio</h5>
-      <table class="table" *ngIf="portfolio.percentageContributionObj && portfolio.percentageContributionObj.keys[0]" datatable="ng" [dtOptions]="dtOptions">
-        <thead>
-          <tr>
-            <th>Coin ticker</th>
-            <th>Total Units</th>
-            <th>Price Per Unit<br/>(in USD)</th>
-            <th>total balance<br/>(in USD)</th>
-            <th>Percentage <br/> in total portfolio</th>
-          </tr>
-        </thead>
-        <tbody>
-          <ng-container *ngFor="let key of portfolio.percentageContributionObj.keys; let i = index">
-            <tr>
-              <td>{{portfolio.percentageContributionObj.data[key].coinTicker}}</td>
-              <td>{{numberFormat(portfolio.percentageContributionObj.data[key].totalUnits)}}</td>
-              <td class="{{portfolio.percentageContributionObj.data[key].priceClass}}">{{numberFormat(portfolio.percentageContributionObj.data[key].priceOfOneUnit)}}</td>
-              <td class="{{portfolio.percentageContributionObj.data[key].priceClass}}">{{numberFormat(portfolio.percentageContributionObj.data[key].totalBalanceInUsd)}}</td>
-              <td class="{{portfolio.percentageContributionObj.data[key].priceClass}}">{{portfolio.percentageContributionObj.data[key].percentage}}</td>
-            </tr>
-          </ng-container>
-        </tbody>
-      </table>
-      <h5>Total Portfolio (USD) : <b>{{totalPortFolio}}</b></h5>
-    </div>
-    <div class="col-lg-6 col-md-6" style="border-left: 1px solid black" *ngIf="portfolio.portfolioData && portfolio.portfolioData.data">
+    <div class="col-lg-12 col-md-12" *ngIf="portfolio.portfolioData && portfolio.portfolioData.data">
       <h5 class="heading">Portfolio Data </h5>
       <h6>24 hour Change - {{portfolio.change1d.difference}} ({{portfolio.change1d.percentage}}%)</h6>
       <div class="card mb-3">

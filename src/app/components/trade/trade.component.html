@@ -1,0 +1,140 @@
+<p style="color:red">{{error}}</p>
+<p style="color:green">{{success}}</p>
+<div class="col-lg-12 col-md-12" *ngIf="is2FAEnabled" style="width:60%;margin-left:20%">
+  <form role="form" [formGroup]="form" (ngSubmit)="executeTrade(form.value)">
+    <div class="form-div1">
+      <fieldset class="form-group">
+        <label>Account : </label>
+        <select class="ui default button" formControlName="userAccountId">
+          <option value="">select account</option>
+          <option *ngFor="let option of exchangeKeys" value="{{exchanges[option].userAccountId}}">{{exchanges[option].accountName}}</option>
+        </select>
+      </fieldset>
+      <span class="gdax-form" *ngIf="exchanges[form.value.userAccountId] && exchanges[form.value.userAccountId].exchangeName === 'gdax'">
+        <fieldset class="form-group">
+          <label>Product Id</label>
+          <select class="ui default button" formControlName="productId">
+            <option value="">select product Id</option>
+            <option *ngFor="let gdaxId of gdaxIds" value="{{gdaxId.id}}">{{gdaxId.display_name}}</option>
+          </select>
+        </fieldset>
+        <fieldset class="form-group">
+          <label>Type</label>
+          <select class="ui default button" formControlName="type">
+            <option value="">select product Id</option>
+            <option value="market">market</option>
+            <option value="limit">limit</option>
+          </select>
+        </fieldset>
+        <fieldset class="form-group">
+          <label>Side</label>
+          <select class="ui default button" formControlName="side">
+            <option value="">select Side</option>
+            <option value="buy">buy</option>
+            <option value="sell">sell</option>
+          </select>
+        </fieldset>
+        <fieldset class="form-group">
+          <label>Size</label>
+          <input class="form-control" type="number" formControlName="size">
+        </fieldset>
+        <fieldset class="form-group">
+          <label>Price</label>
+          <input class="form-control" type="number" formControlName="price">
+        </fieldset>
+      </span>
+
+      <span class="coinbase-form" *ngIf="exchanges[form.value.userAccountId] && exchanges[form.value.userAccountId].exchangeName === 'coinbase'">
+        <fieldset class="form-group">
+          <label>Side</label>
+          <select class="ui default button" formControlName="side">
+            <option value="">select Side</option>
+            <option value="buy">buy</option>
+            <option value="sell">sell</option>
+          </select>
+        </fieldset>
+        <fieldset class="form-group">
+          <label>Currency</label>
+          <input class="form-control" type="text" formControlName="currency">
+        </fieldset>
+        <fieldset class="form-group">
+          <label>Amount</label>
+          <input class="form-control" type="number" formControlName="size">
+        </fieldset>
+      </span>
+
+      <span class="bittrex-form" *ngIf="exchanges[form.value.userAccountId] && exchanges[form.value.userAccountId].exchangeName === 'bittrex'">
+        <fieldset class="form-group">
+          <label>Side</label>
+          <select class="ui default button" formControlName="side">
+            <option value="">select Side</option>
+            <option value="buy">buy</option>
+            <option value="sell">sell</option>
+          </select>
+        </fieldset>
+        <fieldset class="form-group">
+          <label>Market</label>
+          <input class="form-control" type="text" formControlName="currency">
+        </fieldset>
+        <fieldset class="form-group">
+          <label>Quantity</label>
+          <input class="form-control" type="number" formControlName="size">
+        </fieldset>
+        <fieldset class="form-group">
+          <label>Rate</label>
+          <input class="form-control" type="number" formControlName="price">
+        </fieldset>
+      </span>
+
+      <span class="binance-form" *ngIf="exchanges[form.value.userAccountId] && exchanges[form.value.userAccountId].exchangeName === 'binance'">
+        <fieldset class="form-group">
+          <label>Side</label>
+          <select class="ui default button" formControlName="side">
+            <option value="">select Side</option>
+            <option value="buy">buy</option>
+            <option value="sell">sell</option>
+          </select>
+        </fieldset>
+        <fieldset class="form-group">
+          <label>Type</label>
+          <select class="ui default button" formControlName="type">
+            <option value="">select product Id</option>
+            <option value="market">market</option>
+            <option value="limit">limit</option>
+          </select>
+        </fieldset>
+        <fieldset class="form-group">
+          <label>Symbol</label>
+          <input class="form-control" type="text" formControlName="currency">
+        </fieldset>
+        <fieldset class="form-group">
+          <label>Quantity</label>
+          <input class="form-control" type="number" formControlName="size">
+        </fieldset>
+        <fieldset class="form-group">
+          <label>Price</label>
+          <input class="form-control" type="number" formControlName="price">
+        </fieldset>
+        <fieldset class="form-group">
+          <label>Time In Force</label>
+          <input class="form-control" type="text" formControlName="timeInForce">
+        </fieldset>
+      </span>
+    </div>
+    <div class="heading" *ngIf="exchanges[form.value.userAccountId]">
+      <button type="submit" class="btn btn-danger"
+      [disabled]="(exchanges[form.value.userAccountId].exchangeName === 'gdax' && (form.controls.userAccountId.errors || form.controls.size.errors || form.controls.price.errors
+      || form.controls.side.errors || form.controls.productId.errors || form.controls.type.errors)) ||
+      (exchanges[form.value.userAccountId].exchangeName === 'coinbase' && (form.controls.userAccountId.errors || form.controls.size.errors
+      || form.controls.side.errors || form.controls.currency.errors)) || (exchanges[form.value.userAccountId].exchangeName
+      === 'bittrex' && (form.controls.userAccountId.errors || form.controls.size.errors
+      || form.controls.side.errors || form.controls.currency.errors || form.controls.price.errors) ||
+      (exchanges[form.value.userAccountId].exchangeName === 'binance' && (form.controls.userAccountId.errors || form.controls.size.errors
+      || form.controls.side.errors || form.controls.currency.errors || form.controls.price.errors || form.controls.timeInForce.errors)
+      || form.controls.type.errors))">Execute</button>
+    </div>
+  </form>
+</div>
+<div class="jumbotron bg-transparent text-center" *ngIf="!is2FAEnabled">
+  <h2 class="heading">You first need to enable 2FA in order to access this portion</h2>
+</div>

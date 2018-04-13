@@ -37,7 +37,8 @@ export function provideConfig() {
   return new AuthServiceConfig([
     {
       id: GoogleLoginProvider.PROVIDER_ID,
-      provider: new GoogleLoginProvider("864084211126-6mp7rq070geovl35v6afdhhbq8rg97s0.apps.googleusercontent.com")
+      provider: new GoogleLoginProvider("864084211126-6mp7rq070geovl35v6afdhhbq8rg97s0.apps.googleusercontent.com") // http://localhost:4200
+      // provider: new GoogleLoginProvider("1075964916742-0rq5ipkd6j5mbvphd4m23ecio9lr1n4b.apps.googleusercontent.com") // http://54.210.168.1:4200
     },
     {
       id: FacebookLoginProvider.PROVIDER_ID,

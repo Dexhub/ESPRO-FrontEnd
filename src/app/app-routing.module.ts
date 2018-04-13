@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
 import { AppComponent } from './app.component';
-import { UsersComponent, HomeComponent, PublicDataComponent, CoinInfoComponent, LoginComponent } from './components';
+import { UsersComponent, HomeComponent, PublicDataComponent, CoinInfoComponent, LoginComponent, TradeComponent } from './components';
 
 /**
 * Define sub routes
@@ -15,6 +15,10 @@ const routes: Routes = [
   },
   {
     path: 'login', component: LoginComponent,
+    pathMatch: 'full',
+  },
+  {
+    path: 'execute-trade', component: TradeComponent,
     pathMatch: 'full',
   },
   {

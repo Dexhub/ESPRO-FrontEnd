@@ -64,8 +64,6 @@ export class UsersComponent {
   public form: FormGroup;
   public error:string = '';
   public userIdError:string = '';
-  public user:any = {};
-  public userForm:string = 'show';
   public addUser: Boolean = false;
   public exchanges: Array<Exchange> = [];
   public userAccounts: Array<UserAccount> = [];
@@ -84,7 +82,6 @@ export class UsersComponent {
      autoWidth: true
    };
   constructor(public router: Router, public commonService: CommonService, private route: ActivatedRoute, public socketService: SocketService) {
-    this.getMyProfile();
     this.resetForm();
     this.commonService.getMethod(`${apiUrl.user}/exchanges`)
     .then((data:{ status: Boolean, info: { exchanges: Array<Exchange> } }) => {
@@ -98,35 +95,6 @@ export class UsersComponent {
       this.getTradesHistory();
       this.getAggregationAmount();
       this.getPortFolio();
-    });
-  }
-
-  getMyProfile() {
-    this.commonService.getMethod(`${apiUrl.user}/profile`)
-    .then((profileData: any) => {
-      if (profileData.status && profileData.info && profileData.info.user) {
-        this.user = {
-          name: profileData.info.user.name,
-          email: profileData.info.user.email,
-          contact: profileData.info.user.contact,
-        };
-      }
-    }).catch((err) => {
-      if (err.errormessage) {
-        this.error = err.errormessage;
-      }
-    });
-  }
-
-  updateUserDetails() {
-    console.log(this.user, 'update user data');
-    this.commonService.putMethod(this.user, `${apiUrl.user}/updateprofile`)
-    .then((data) => {
-      console.log(data, 'data');
-      this.userForm = 'show';
-    })
-    .catch((error) => {
-      console.log(error, 'error in updating profile')
     });
   }
 
@@ -212,6 +180,7 @@ export class UsersComponent {
       })
       .catch((error) => {
         console.log(error);
+        this.error = error.errormessage;
       });
     }
 
@@ -229,6 +198,7 @@ export class UsersComponent {
       })
       .catch((error) => {
         console.log(error);
+        this.error = error.errormessage;
       });
     }
 
@@ -299,27 +269,29 @@ export class UsersComponent {
       }
     }
 
-    syncBalance(exchangeId:number) {
-      this.balanceSync[`${exchangeId}`] = true;
-      this.commonService.postMethod({ exchangeId }, `${apiUrl.balance}/fetch`)
+    syncBalance(exchangeId:number, userAccountId: number) {
+      this.balanceSync[`${userAccountId}`] = true;
+      this.commonService.postMethod({ userAccountId }, `${apiUrl.balance}/fetch`)
       .then((res: { success: Boolean, info: { message: string } }) => {
-        this.balanceSync[`${exchangeId}`] = false;
+        this.balanceSync[`${userAccountId}`] = false;
       })
       .catch((error) => {
         console.log(error);
-        this.balanceSync[`${exchangeId}`] = false;
+        this.error = error.errormessage;
+        this.balanceSync[`${userAccountId}`] = false;
       });
     }
 
-    syncTradeHistory(exchangeId:number) {
-      this.tradesSync[`${exchangeId}`] = true;
-      this.commonService.postMethod({ exchangeId }, `${apiUrl.trade}/fetch`)
+    syncTradeHistory(exchangeId:number, userAccountId: number) {
+      this.tradesSync[`${userAccountId}`] = true;
+      this.commonService.postMethod({ userAccountId }, `${apiUrl.trade}/fetch`)
       .then((res: { success: Boolean, info: { message: string } }) => {
-        this.tradesSync[`${exchangeId}`] = false;
+        this.tradesSync[`${userAccountId}`] = false;
       })
       .catch((error) => {
         console.log(error);
-        this.tradesSync[`${exchangeId}`] = false;
+        this.error = error.errormessage;
+        this.tradesSync[`${userAccountId}`] = false;
       });
     }
 
@@ -330,6 +302,7 @@ export class UsersComponent {
         this.trades = res.info.trades;
       })
       .catch((error) => {
+        this.error = error.errormessage;
         console.log(error);
       });
     }

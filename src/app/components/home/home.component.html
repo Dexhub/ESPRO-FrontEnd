@@ -62,7 +62,8 @@
         </fieldset>
       </div>
       <div class="heading">
-        <button type="submit" class="ui primary button marginTop22" [disabled]="forgetPasswordForm.controls.username.errors">Request Password</button>
+        <button type="submit" class="ui primary button marginTop22" [disabled]="forgetPasswordForm.controls.username.errors">Request Code</button>
+        <button type="submit" class="ui secondary button marginTop22" (click)="changeFormTag('resetPassword')">Already have a code?</button>
         <button class="btn btn-danger" (click)="changeFormTag('login')">cancel</button>
       </div>
     </form>
@@ -81,6 +82,7 @@
       </div>
       <div class="heading">
         <button type="submit" class="ui primary button marginTop22" [disabled]="resetPasswordForm.controls.password.errors || resetPasswordForm.controls.code.errors">Reset Password</button>
+        <button type="submit" class="ui primary button marginTop22" (click)="changeFormTag('forgetPassword')">Request New Code</button>
         <button class="btn btn-danger" (click)="changeFormTag('login')">cancel</button>
       </div>
     </form>
