@@ -10,12 +10,27 @@
   </button>
 </div>
 
+
 <p style="color:red">{{coinError}}</p>
-<label>Currency : </label>
-<select class="ui default button" style="width:200px;display:inline" [(ngModel)]="selectedCurrency">
-  <option value="">select currency</option>
-  <option *ngFor="let currency of currencies" value="{{currency}}">{{currency}}</option>
-</select>
+<button (click)="changeMethodType()" class="ui secondary button">
+  {{(method === 'coin') ? 'get coins by exchange' : 'get all coins'}}
+</button>
+<span *ngIf="method === 'exchange'" style="margin-left: 50px">
+  <label>Exchange : </label>
+  <select class="ui default button" style="width:200px;display:inline" [(ngModel)]="exchange">
+    <option value="">All</option>
+    <option value="bittrex">Bittrex</option>
+    <option value="gdax">Gdax</option>
+    <option value="binance">Binance</option>
+  </select>
+</span>
+<span style="margin-left:50px">
+  <label>Currency : </label>
+  <select class="ui default button" style="width:200px;display:inline" [(ngModel)]="selectedCurrency">
+    <option value="">select currency</option>
+    <option *ngFor="let currency of currencies" value="{{currency}}">{{currency}}</option>
+  </select>
+</span>
 <button (click)="getCoins()" type="button" class="btn btn-primary button">Get coins</button>
 <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 col-xl-12" >
   <h5 class="heading">Coins</h5>
@@ -38,9 +53,10 @@
                 <th style="cursor:pointer" (click)="getCoins('marketCap', (sort['marketCap'] === 'asc') ? 'desc' : 'asc', page)"><i class="fa fa-sort"></i> Market Cap({{coins[0].currency}})</th>
                 <th>Available Supply</th>
                 <th>Total Supply</th>
-                <th>Change(1D)</th>
-                <th>Change(24H)</th>
-                <th>Change(1W)</th>
+                <th *ngIf="method === 'exchange'">Pair</th>
+                <th *ngIf="method === 'coin'">Change(1H)</th>
+                <th *ngIf="method === 'coin'">Change(24H)</th>
+                <th *ngIf="method === 'coin'">Change(1W)</th>
                 <th>7 day price</th>
               </tr>
             </thead>
@@ -58,9 +74,10 @@
                   <td>{{numberFormat(uiCoins.data[coinSymbol].market_cap_usd) || 0}}</td>
                   <td>{{numberFormat(uiCoins.data[coinSymbol].available_supply) || 0}}</td>
                   <td>{{numberFormat(uiCoins.data[coinSymbol].total_supply) || 0}}</td>
-                  <td>{{numberFormat(uiCoins.data[coinSymbol].percent_change_1h) || 0}}</td>
-                  <td>{{numberFormat(uiCoins.data[coinSymbol].percent_change_24h) || 0}}</td>
-                  <td>{{numberFormat(uiCoins.data[coinSymbol].percent_change_7d) || 0}}</td>
+                  <td *ngIf="method === 'exchange'">{{uiCoins.data[coinSymbol].pair}}</td>
+                  <td *ngIf="method === 'coin'">{{numberFormat(uiCoins.data[coinSymbol].percent_change_1h) || 0}}</td>
+                  <td *ngIf="method === 'coin'">{{numberFormat(uiCoins.data[coinSymbol].percent_change_24h) || 0}}</td>
+                  <td *ngIf="method === 'coin'">{{numberFormat(uiCoins.data[coinSymbol].percent_change_7d) || 0}}</td>
                   <td><img src="http://s3.amazonaws.com/d3-charts/{{uiCoins.data[coinSymbol].symbol}}.svg" style="width:200px;height:70px"/></td>
                 </tr>
               </ng-container>

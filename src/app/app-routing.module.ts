@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
 import { AppComponent } from './app.component';
-import { UsersComponent, HomeComponent, PublicDataComponent, CoinInfoComponent, LoginComponent, TradeComponent } from './components';
+import { UsersComponent, HomeComponent, PublicDataComponent, CoinInfoComponent, LoginComponent, TradeComponent, KrakenComponent } from './components';
 
 /**
 * Define sub routes
@@ -19,6 +19,10 @@ const routes: Routes = [
   },
   {
     path: 'execute-trade', component: TradeComponent,
+    pathMatch: 'full',
+  },
+  {
+    path: 'kraken', component: KrakenComponent,
     pathMatch: 'full',
   },
   {

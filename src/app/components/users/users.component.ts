@@ -13,7 +13,8 @@ export interface UserInfoData {
   apiKey: string,
   secret: string,
   passPhrase: string,
-  exchangeId: number
+  exchangeId: number,
+  accountName: string
 }
 
 export interface Exchange {
@@ -23,6 +24,7 @@ export interface Exchange {
 
 export interface UserAccount {
   userAccountId: number,
+  accountName: string,
   exchangeName: string,
   exchangeId: number,
   apiKey: string,
@@ -205,6 +207,9 @@ export class UsersComponent {
 
     resetForm() {
       this.form = new FormGroup({
+        accountName: new FormControl('', [
+          Validators.required
+        ]),
         apiKey: new FormControl('', [
           Validators.required
         ]),
@@ -237,10 +242,12 @@ export class UsersComponent {
     }
 
     validateUserInfoData(data:UserInfoData) {
-      if (data.apiKey === undefined  || data.apiKey === null || data.apiKey.trim() === '') {
+      if (data.accountName === undefined  || data.accountName === null || data.accountName.trim() === '') {
+        this.error = 'please provide a valid account name';
+      } else if (data.apiKey === undefined  || data.apiKey === null || data.apiKey.trim() === '') {
         this.error = 'please provide a valid access key';
       } else if (data.secret === undefined  || data.secret === null || data.secret.trim() === '') {
-        this.error = 'please provide a valid access key';
+        this.error = 'please provide a valid secret key';
       } else if (data.exchangeId === undefined  || data.exchangeId === null || data.exchangeId.toString() === '') {
         this.error = 'please select a valid exchange';
       } else {
@@ -252,18 +259,20 @@ export class UsersComponent {
       this.validateUserInfoData(data);
       if (this.error === '') {
         this.commonService.postMethod(data, `${apiUrl.user}/authenticate`)
-        .then((res: { success: Boolean, info: { userAccountId: number } }) => {
+        .then((res: { success: Boolean, info: { userAccountId: number, exchangeName: string } }) => {
           this.userAccounts.unshift({
+            accountName: data.accountName,
+            exchangeName: res.info.exchangeName,
             userAccountId: res.info.userAccountId,
             exchangeId: data.exchangeId,
             apiKey: data.apiKey,
             secret: data.secret,
-            passPhrase: data.passPhrase,
-            exchangeName: ''
+            passPhrase: data.passPhrase
           });
           this.resetForm();
         })
         .catch((error) => {
+          console.log(error)
           this.error = error.errormessage;
         })
       }

@@ -43,6 +43,10 @@ export class HomeComponent {
 
   constructor(public router: Router, public commonService: CommonService, public socketService: SocketService, private auth: AuthService) {
     this.resetForm();
+    this.getCoinsList();
+    if (localStorage.getItem('token')) {
+      this.getMySubscriptions();
+    }
   }
 
   ngOnInit() {
@@ -210,7 +214,6 @@ export class HomeComponent {
    this.user = null;
    this.qrCodeImage = '';
    this.code = '';
-   this.coinsList = [];
    this.subscriptionId = '';
    this.subscriptions = [];
    if (this.isLoggedInFromProvider) {
@@ -296,7 +299,6 @@ export class HomeComponent {
         is2FAEnabled: data.info.is2FAEnabled
       };
       this.resetForm();
-      this.getCoinsList();
       this.getMySubscriptions();
     } else {
       this.error = data.info.message;
@@ -361,7 +363,10 @@ export class HomeComponent {
     { key: 'percentageVolumeChange', value: 'Percentage volume change' },
     { key: 'specificPrice', value: 'Specific price' },
     { key: 'percentagePortfolioChange', value: 'Percentage portfolio change' },
-    { key: 'specificTime', value: 'Specific time' }
+    { key: 'specificTime', value: 'Specific time' },
+    { key: 'specificPortfolioPrice', value: 'Specific price change in portfolio' },
+    { key: 'specificPortfolioTime', value: 'portfolio notification on a specific time' },
+    { key: 'portfolioTimeInterval', value: 'portfolio notification on a specific time interval' },
   ];
   showNotifications() {
     this.formTag = 'notifications';
@@ -416,17 +421,17 @@ export class HomeComponent {
 
   validateSubscriptionData(data:any) {
     this.subscriptionError = '';
-    if (data.coinTicker === '') {
+    if (!data.alertType.toLowerCase().includes('portfolio') && data.coinTicker === '') {
       this.subscriptionError = 'please select coin';
       return false;
     } else if (data.alertType === '') {
       this.subscriptionError = 'please select alert type';
       return false;
-    } else if (data.alertType !== 'specificTime' && (data.changeValue === '' || isNaN(data.changeValue))) {
+    } else if (!['specificTime', 'specificPortfolioTime', 'portfolioTimeInterval'].includes(data.alertType) && (data.changeValue === '' || isNaN(data.changeValue))) {
       this.subscriptionError = 'please provide a valid change value';
       return false;
     } else {
-      if (data.alertType === 'specificTime') {
+      if (['specificTime', 'specificPortfolioTime'].includes(data.alertType)) {
         const offset = new Date().getTimezoneOffset();
         const newDate = this.addMinutes(new Date(`${moment().format('YYYY-MM-DD')} ${data.changeTime}`), offset);
         let minutes = newDate.getMinutes();
@@ -482,7 +487,7 @@ export class HomeComponent {
   onSubmitSubscription(data:any) {
     data = this.validateSubscriptionData(data);
     if (data) {
-      this.commonService.postMethod(data, `${apiUrl.user}/subscribe`)
+      this.commonService.postMethod(data, `${apiUrl.user}/subscription`)
       .then((res: any) => {
         this.resetSubscriptionForm();
         this.subscriptions.push(res.info.notification);
@@ -494,7 +499,7 @@ export class HomeComponent {
   }
 
   changeTimeToLocal(time, alertType) {
-    if (alertType === 'specificTime') {
+    if (['specificTime', 'specificPortfolioTime'].includes(alertType)) {
       const offset = new Date().getTimezoneOffset();
       const newDate = this.addMinutes(new Date(`${moment().format('YYYY-MM-DD')} ${time}`), -offset);
       let minutes = newDate.getMinutes();
@@ -518,7 +523,7 @@ export class HomeComponent {
 
   getMySubscriptions() {
     this.subscriptions = [];
-    this.commonService.getMethod(`${apiUrl.user}/subscriptions`)
+    this.commonService.getMethod(`${apiUrl.user}/subscription`)
     .then((subscriptions: any) => {
       if (subscriptions.status) {
         this.subscriptions = subscriptions.info.subscriptions;
@@ -530,7 +535,7 @@ export class HomeComponent {
   }
 
   deleteSubscription(index) {
-    this.commonService.deleteMethod(`${apiUrl.user}/subscription?id=${this.subscriptions[index].id}`)
+    this.commonService.deleteMethod(`${apiUrl.user}/subscription/${this.subscriptions[index].id}`)
     .then((subscriptions: any) => {
       this.subscriptions.splice(index, 1);
     })

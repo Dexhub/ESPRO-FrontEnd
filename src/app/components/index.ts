@@ -4,3 +4,4 @@ export * from './public-data/public-data.component';
 export * from './coin-info/coin-info.component';
 export * from './login/login.component';
 export * from './trade/trade.component';
+export * from './kraken/kraken.component';

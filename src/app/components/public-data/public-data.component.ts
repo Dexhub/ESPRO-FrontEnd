@@ -74,20 +74,34 @@ export class PublicDataComponent {
     * get socketData form server using socket connection
     */
     this.socketData.subscribe((msg: any) => {
-      if (msg.type === 'coinChange') {
-        const coinTicker = msg.data.symbol;
+      if (msg.type === 'coinChange' && this.method === 'coin') {
+        const coinTicker = `${msg.data.symbol}-${msg.data.exchange}`;
         if (this.uiCoins.data[coinTicker] !== undefined) {
           this.uiCoins.data[coinTicker].priceClass = (this.uiCoins.data[coinTicker].price_usd > msg.data.price_usd) ? 'decrease' :  ((this.uiCoins.data[coinTicker].price_usd < msg.data.price_usd)) ? 'increase' : 'neutral';
           this.uiCoins.data[coinTicker].market_cap_usd = msg.data.market_cap_usd;
           this.uiCoins.data[coinTicker].price_btc = msg.data.price_btc;
           this.uiCoins.data[coinTicker].price_usd = msg.data.price_usd;
           this.uiCoins.data[coinTicker].rank = msg.data.rank;
-          console.log(coinTicker, msg.data);
+          // console.log(coinTicker, msg.type, this.exchange, this.method);
+        }
+      }
+
+      if (msg.type === 'coinChangeByExchange' && this.method === 'exchange' && (this.exchange === '' || this.exchange === msg.data.symbol.exchange)) {
+        const coinTicker = `${msg.data.symbol}-${msg.data.exchange}`;
+        if (this.uiCoins.data[coinTicker] !== undefined) {
+          this.uiCoins.data[coinTicker].priceClass = (this.uiCoins.data[coinTicker].price_usd > msg.data.price_usd) ? 'decrease' :  ((this.uiCoins.data[coinTicker].price_usd < msg.data.price_usd)) ? 'increase' : 'neutral';
+          this.uiCoins.data[coinTicker].market_cap_usd = msg.data.market_cap_usd;
+          this.uiCoins.data[coinTicker].price_btc = msg.data.price_btc;
+          this.uiCoins.data[coinTicker].price_usd = msg.data.price_usd;
+          this.uiCoins.data[coinTicker].rank = msg.data.rank;
+          // console.log(coinTicker, msg.type, this.exchange, this.method);
         }
       }
     });
   }
 
+  public method: string = 'coin';
+  public exchange: string = '';
   getCoins(sortKey = 'rank', sortOrder = 'asc', pageNum = 0) {
     this.currentSort = sortKey;
     this.currentOrder = sortOrder;
@@ -96,15 +110,15 @@ export class PublicDataComponent {
     this.coinError = '';
     this.coins = [];
     this.uiCoins = { data: {}, keys: [] };
-    this.commonService.getMethod(`${apiUrl.coins}?limit=${this.socketService.pageSize}&page=${this.page}&sort=${sortKey}&sortId=${sortOrder}&clientId=${this.socketService.clientId}&currency=${this.selectedCurrency}`)
+    this.commonService.getMethod(`${apiUrl.coins}?limit=${this.socketService.pageSize}&page=${this.page}&sort=${sortKey}&sortId=${sortOrder}&clientId=${this.socketService.clientId}&currency=${this.selectedCurrency}&method=${this.method}&exchange=${this.exchange}`)
     .then((data:any) => {
       if (data.status) {
         this.getPageNumbers(data.pagination.total);
         this.coins = data.info;
         this.coins.forEach((coin) => {
-          this.uiCoins.data[coin.symbol] = coin;
-          this.uiCoins.data[coin.symbol].priceClass = 'neutral';
-          this.uiCoins.keys.push(coin.symbol);
+          this.uiCoins.data[`${coin.symbol}-${coin.exchange}`] = coin;
+          this.uiCoins.data[`${coin.symbol}-${coin.exchange}`].priceClass = 'neutral';
+          this.uiCoins.keys.push(`${coin.symbol}-${coin.exchange}`);
         });
       } else {
         this.coinError = data.errormessage;
@@ -112,6 +126,11 @@ export class PublicDataComponent {
     }).catch((error) => {
       this.coinError = error.errormessage;
     });
+  }
+
+  changeMethodType() {
+    this.method = (this.method === 'coin') ? 'exchange' : 'coin';
+    this.getCoins();
   }
 
   getPageNumbers(count) {

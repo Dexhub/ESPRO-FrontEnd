@@ -1,6 +1,20 @@
+<div style="width:100%;text-align:center">
+  <button routerLink="/public-data" class="ui success button">
+    public data
+  </button>
+  <button routerLink="/coin-info" class="ui success button">
+    coin info
+  </button>
+  <button routerLink="/users" class="ui success button">
+    home
+  </button>
+  <button class="ui primary button" (click)="portfolioRebalancing = !portfolioRebalancing">
+    {{(!portfolioRebalancing) ? 'Portfolio Rebalancing' : 'Execute Trades'}}
+  </button>
+</div>
 <p style="color:red">{{error}}</p>
 <p style="color:green">{{success}}</p>
-<div class="col-lg-12 col-md-12" *ngIf="is2FAEnabled" style="width:60%;margin-left:20%">
+<div class="col-lg-12 col-md-12" *ngIf="is2FAEnabled && !portfolioRebalancing" style="width:60%;margin-left:20%">
   <form role="form" [formGroup]="form" (ngSubmit)="executeTrade(form.value)">
     <div class="form-div1">
       <fieldset class="form-group">
@@ -122,19 +136,116 @@
       </span>
     </div>
     <div class="heading" *ngIf="exchanges[form.value.userAccountId]">
-      <button type="submit" class="btn btn-danger"
-      [disabled]="(exchanges[form.value.userAccountId].exchangeName === 'gdax' && (form.controls.userAccountId.errors || form.controls.size.errors || form.controls.price.errors
-      || form.controls.side.errors || form.controls.productId.errors || form.controls.type.errors)) ||
-      (exchanges[form.value.userAccountId].exchangeName === 'coinbase' && (form.controls.userAccountId.errors || form.controls.size.errors
-      || form.controls.side.errors || form.controls.currency.errors)) || (exchanges[form.value.userAccountId].exchangeName
-      === 'bittrex' && (form.controls.userAccountId.errors || form.controls.size.errors
-      || form.controls.side.errors || form.controls.currency.errors || form.controls.price.errors) ||
-      (exchanges[form.value.userAccountId].exchangeName === 'binance' && (form.controls.userAccountId.errors || form.controls.size.errors
-      || form.controls.side.errors || form.controls.currency.errors || form.controls.price.errors || form.controls.timeInForce.errors)
-      || form.controls.type.errors))">Execute</button>
+      <!-- <button type="submit" class="btn btn-danger"
+      [disabled]="(exchanges[form.value.userAccountId].exchangeName === 'gdax' && !form.controls.userAccountId.errors
+      && !form.controls.size.errors && form.controls.price.errors
+      && !form.controls.side.errors && !form.controls.productId.errors && form.controls.type.errors)
+
+      || (exchanges[form.value.userAccountId].exchangeName === 'coinbase' && !form.controls.userAccountId.errors &&
+      !form.controls.size.errors && !form.controls.side.errors && form.controls.currency.errors)
+
+      || (exchanges[form.value.userAccountId].exchangeName === 'bittrex' && !form.controls.userAccountId.errors
+      && !form.controls.size.errors && !form.controls.side.errors && !form.controls.currency.errors &&
+      !form.controls.price.errors)
+
+      || (exchanges[form.value.userAccountId].exchangeName === 'binance'
+      && !form.controls.userAccountId.errors && !form.controls.size.errors
+      && !form.controls.side.errors && !form.controls.currency.errors && !form.controls.price.errors &&
+      !form.controls.timeInForce.errors && !form.controls.type.errors)">Execute</button> -->
+      <button type="submit" class="btn btn-danger">Execute</button>
     </div>
   </form>
 </div>
+<div class="col-lg-12 col-md-12" *ngIf="is2FAEnabled && portfolioRebalancing">
+  <form role="portfolioRebalancingForm" [formGroup]="portfolioRebalancingForm" (ngSubmit)="executePortfolioRebalancing(portfolioRebalancingForm.value)" style="width:60%;margin-left:20%">
+    <div class="form-div1">
+      <fieldset class="form-group">
+        <label>Account : </label>
+        <select class="ui default button" formControlName="userAccountId">
+          <option value="">select account</option>
+          <option *ngFor="let option of exchangeKeys" value="{{exchanges[option].userAccountId}}">{{exchanges[option].accountName}}</option>
+        </select>
+      </fieldset>
+      <fieldset class="form-group">
+        <label>Base Symbol</label>
+        <input class="form-control" type="text" formControlName="baseSym" disabled="true">
+      </fieldset>
+      <fieldset class="form-group">
+        <label>Base Percentage</label>
+        <input class="form-control" type="number" formControlName="basePercentage">
+      </fieldset>
+      <fieldset class="form-group">
+        <label>Quote Symbol</label>
+        <input class="form-control" type="text" formControlName="quoteSym" disabled="true">
+      </fieldset>
+      <fieldset class="form-group">
+        <label>Quote Percentage</label>
+        <input class="form-control" type="number" formControlName="quotePercentage">
+      </fieldset>
+      <div class="heading" *ngIf="exchanges[portfolioRebalancingForm.value.userAccountId]">
+        <button type="submit" class="btn btn-danger">Execute</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div class="row" style="margin-top:300px" *ngIf="is2FAEnabled">
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 col-xl-12" *ngIf="myTrades.length">
+    <h5 class="heading">My Trades <button class="ui primary button action" (click)="getMyTrades()"><i class="fa fa-refresh"></i></button> </h5>
+    <div class="timeline-panel">
+      <div class="row">
+        <div class="col-sm-12">
+          <table class="table row-border hover" datatable="ng" [dtOptions]="dtOptions">
+            <thead>
+              <tr>
+                <th>Exchange</th>
+                <th>Trade Executed</th>
+                <th>Input</th>
+                <th>Output</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let trade of myTrades; let i = index">
+                <tr>
+                  <td>{{exchanges[trade.userAccountId].accountName}} ({{exchanges[trade.userAccountId].exchangeName}})</td>
+                  <td>{{trade.createdAt}}</td>
+                  <td>{{jsonStringify(trade.inputJson)}}</td>
+                  <td>{{jsonStringify(trade.outputJson)}}</td>
+                  <td>{{trade.status}}</td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-12 col-md-12" style="margin-top:30px" *ngIf="portfolio.length">
+    <h5 class="heading">My balance <button class="ui primary button action" (click)="getPortFolio()"><i class="fa fa-refresh"></i></button> </h5>
+    <table class="table" datatable="ng" [dtOptions]="dtOptions">
+      <thead>
+        <tr>
+          <th>Coin ticker</th>
+          <th>Total Units</th>
+          <th>Price Per Unit<br/>(in USD)</th>
+          <th>total balance<br/>(in USD)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let portfolioObj of portfolio; let i = index">
+          <tr>
+            <td>{{portfolioObj.coinTicker}}</td>
+            <td>{{numberFormat(portfolioObj.totalUnits)}}</td>
+            <td>{{numberFormat(portfolioObj.priceOfOneUnit)}}</td>
+            <td>{{numberFormat(portfolioObj.totalBalanceInUsd)}}</td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+</div>
+
 <div class="jumbotron bg-transparent text-center" *ngIf="!is2FAEnabled">
   <h2 class="heading">You first need to enable 2FA in order to access this portion</h2>
 </div>

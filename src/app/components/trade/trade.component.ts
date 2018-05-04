@@ -14,11 +14,14 @@ import { CommonService, SocketService } from '../../services';
 export class TradeComponent {
   public is2FAEnabled: boolean = false;
   public form: FormGroup;
+  public portfolioRebalancingForm: FormGroup;
   public exchanges: any = {};
   public exchangeKeys: any = [];
   public gdaxIds: any = [];
   public error:string = '';
   public success:string = '';
+  public portfolioRebalancing: Boolean = false;
+  public myTrades: any = [];
    constructor(public router: Router, public commonService: CommonService, private route: ActivatedRoute, public socketService: SocketService) {
      this.getExchanges();
      this.resetForm();
@@ -28,12 +31,16 @@ export class TradeComponent {
      })
      .catch((err) => {
        this.error = err;
-     })
+     });
    }
    ngOnInit() {
     this.socketService.disconnect();
     const is2FAEnabled = localStorage.getItem('is2FAEnabled');
     this.is2FAEnabled = is2FAEnabled && is2FAEnabled.toString() === 'true' ? true : false;
+    if (this.is2FAEnabled) {
+      this.getMyTrades();
+      this.getPortFolio();
+    }
    }
    resetForm() {
      this.form = new FormGroup({
@@ -45,6 +52,13 @@ export class TradeComponent {
        type: new FormControl('', [ Validators.required ]),
        currency: new FormControl('', [ Validators.required ]),
        timeInForce: new FormControl('', [ Validators.required ])
+     });
+     this.portfolioRebalancingForm = new FormGroup({
+       userAccountId: new FormControl('', [ Validators.required ]),
+       baseSym: new FormControl('ETH', [ Validators.required ]),
+       basePercentage: new FormControl('', [ Validators.required ]),
+       quoteSym: new FormControl('USD', [ Validators.required ]),
+       quotePercentage: new FormControl('', [ Validators.required ])
      });
    }
    getExchanges() {
@@ -59,6 +73,45 @@ export class TradeComponent {
        this.exchangeKeys = Object.keys(exchanges);
      });
    }
+   getMyTrades() {
+     this.commonService.getMethod(`${apiUrl.portfolio}/trades`)
+     .then((data:any) => {
+       if (data.status) {
+        this.myTrades = data.info.trades;
+       } else {
+        this.error = data.errormessage;
+       }
+     });
+   }
+   numberFormat(value:number) {
+     if (value) {
+       if (value % 1 === 0) {
+         return value;
+       } else {
+         return value.toFixed(4);
+       }
+     } else {
+       return value;
+     }
+   }
+
+  public portfolio: any = [];
+   getPortFolio() {
+     this.portfolio = [];
+     this.commonService.getMethod(`${apiUrl.portfolio}/fetch`)
+     .then((res:any) => {
+       if (res.status) {
+          this.portfolio = res.info.percentageContribution;
+       }
+     })
+     .catch((error) => {
+       console.log(error);
+       this.error = error.errormessage;
+     });
+   }
+  jsonStringify(obj) {
+    return JSON.stringify(obj, null, 1);
+  }
    executeTrade(data) {
      const options = { body: {}, url: '' };
      const exchangeName = this.exchanges[data.userAccountId] ? this.exchanges[data.userAccountId].exchangeName : '';
@@ -90,6 +143,43 @@ export class TradeComponent {
        this.resetMsg();
      });
    }
+
+  validatePortfolioRebalance(data:any) {
+    if (data.baseSym !== 'ETH') {
+      this.error = 'only ETH is allowed as base symbol';
+      return false;
+    } else if (data.quoteSym !== 'USD') {
+      this.error = 'only USD is allowed as quote symbol';
+      return false;
+    } else if (isNaN(parseInt(data.basePercentage))) {
+      this.error = 'please provide base percentage';
+      return false;
+    } else if (isNaN(parseInt(data.quotePercentage))) {
+      this.error = 'please provide quote percentage';
+      return false;
+    } else if (parseInt(data.basePercentage) + parseInt(data.quotePercentage) !== 100) {
+      this.error = 'sum of base percentage and quote percentage should be 100';
+      return false;
+    }
+    return true;
+  }
+
+  executePortfolioRebalancing(data) {
+    this.error = '';
+    if (this.validatePortfolioRebalance(data)) {
+      this.commonService.postMethod(data, `${apiUrl.portfolio}/rebalance`)
+      .then((success:any) => {
+        // this.resetForm();
+        this.success = success.info.message;
+        this.resetMsg();
+      })
+      .catch((err) => {
+        this.error = err.errormessage;
+        this.resetMsg();
+      });
+    }
+  }
+
    resetMsg() {
      setTimeout(() => {
        this.success = '';
