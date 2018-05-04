@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CommonService, SocketService } from '../../services';
 import { apiUrl } from '../../constants/constants';
 import { AuthService, SocialUser, GoogleLoginProvider, FacebookLoginProvider } from 'angular4-social-login';
@@ -40,12 +40,22 @@ export class HomeComponent {
   public addUser: Boolean = false;
   public formTag = 'login';
   public editProfile = false;
+  public isSuperAdmin = false;
+  public userId: number = 0;
 
-  constructor(public router: Router, public commonService: CommonService, public socketService: SocketService, private auth: AuthService) {
+  constructor(public router: Router, public commonService: CommonService, public socketService: SocketService, private auth: AuthService, private route: ActivatedRoute) {
+    this.route.params.subscribe(params => {
+      if (params.id) {
+        this.userId = params.id;
+      }
+    });
     this.resetForm();
     this.getCoinsList();
     if (localStorage.getItem('token')) {
       this.getMySubscriptions();
+    }
+    if (localStorage.getItem('isSuperAdmin')) {
+      this.isSuperAdmin = true;
     }
   }
 
@@ -117,7 +127,11 @@ export class HomeComponent {
   }
 
   getMyProfile() {
-    this.commonService.getMethod(`${apiUrl.user}/profile`)
+    let url = `${apiUrl.user}/profile`;
+    if (this.isSuperAdmin) {
+      url += `/${this.userId}`
+    }
+    this.commonService.getMethod(url)
     .then((profileData: any) => {
       this.isLoading = false;
       if (profileData.status && profileData.info && profileData.info.user) {
@@ -180,6 +194,7 @@ export class HomeComponent {
         this.user.isContactVerified = success.info.isContactVerified;
         this.user.is2FAEnabled = success.info.is2FAEnabled;
         localStorage.setItem('is2FAEnabled', success.info.is2FAEnabled);
+        this.formTag = 'login';
       })
       .catch((error) => {
         this.error = error.errormessage;
@@ -371,10 +386,12 @@ export class HomeComponent {
   showNotifications() {
     this.formTag = 'notifications';
     this.resetSubscriptionForm();
+    this.resetErrorSuccessMsg();
   }
 
   hideNotifications() {
     this.formTag = 'login';
+    this.resetErrorSuccessMsg();
   }
 
   resetSubscriptionForm() {

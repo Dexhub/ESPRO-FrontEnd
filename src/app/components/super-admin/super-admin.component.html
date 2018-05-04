@@ -1,0 +1,43 @@
+<p class="font-red" style="text-align:center"> &nbsp; &nbsp; &nbsp; &nbsp;{{error}}</p><br/>
+
+<div class="col-lg-12 col-md-12 col-sm-12" *ngIf="!isLoggedIn">
+  <form style="margin: 0 20%" role="form" [formGroup]="loginForm" (ngSubmit)="login(loginForm.value)" class="text-left">
+    <h6 class="card-header">Login</h6>
+    <div class="form-div1">
+      <fieldset class="form-group">
+        <label>Username</label>
+        <input class="form-control" type="text" formControlName="username">
+      </fieldset>
+      <fieldset class="form-group">
+        <label>Password</label>
+        <input class="form-control" type="password" formControlName="password">
+      </fieldset>
+    </div>
+    <div class="heading">
+      <button type="submit" class="ui primary button marginTop22" [disabled]="loginForm.controls.username.errors || loginForm.controls.password.errors">Login</button>
+    </div>
+  </form>
+</div>
+
+<div class="col-lg-12 col-md-12 col-sm-12" *ngIf="isLoggedIn">
+  <table class="table" datatable="ng" [dtOptions]="dtOptions" *ngIf="userList.length">
+    <thead>
+      <tr>
+        <th>user id</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>View</th>
+      </tr>
+    </thead>
+    <tbody>
+      <ng-container *ngFor="let user of userList;">
+        <tr>
+          <td>{{user.id}}</td>
+          <td>{{user.username}}</td>
+          <td>{{user.email}}</td>
+          <td><button class="ui success button" routerLink="/users/{{user.id}}"><i class="fa fa-eye"></i></button></td>
+        </tr>
+      </ng-container>
+    </tbody>
+  </table>
+</div>

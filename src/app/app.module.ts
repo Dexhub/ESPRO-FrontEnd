@@ -5,7 +5,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AuthService as AuthServiceSocial, SocialLoginModule, AuthServiceConfig } from 'angular4-social-login';
 import { AppComponent } from './app.component';
-import { HomeComponent, UsersComponent, PublicDataComponent, CoinInfoComponent, LoginComponent, TradeComponent, KrakenComponent } from './components';
+import { HomeComponent, UsersComponent, PublicDataComponent, CoinInfoComponent, LoginComponent, TradeComponent, KrakenComponent, SuperAdminComponent } from './components';
 import { CommonService, AuthService, SocketService } from './services';
 import { AppRoutingModule } from './app-routing.module';
 import { ChartsModule } from 'ng2-charts/ng2-charts';
@@ -21,7 +21,8 @@ import { provideConfig } from './constants/constants';
     CoinInfoComponent,
     LoginComponent,
     TradeComponent,
-    KrakenComponent
+    KrakenComponent,
+    SuperAdminComponent
   ],
   imports: [
     BrowserModule,
