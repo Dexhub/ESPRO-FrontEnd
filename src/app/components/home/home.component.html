@@ -264,11 +264,11 @@
   <div class="card-block">
     <button class="btn btn-danger" *ngIf="!isSuperAdmin" (click)="signOut()">Sign out</button>
     <button class="btn btn-primary" *ngIf="formTag !== 'editProfile' && !isSuperAdmin" (click)="initiateEditProfileForm()">Edit Profile</button>
-    <button class="btn btn-primary" *ngIf="!user.isEmailVerified" (click)="requestVerificationLink('email')">Verify Email</button>
-    <button class="btn btn-primary" *ngIf="user.contact && user.contact !== '' && !user.isContactVerified" (click)="requestVerificationLink('contact')">Verify Contact</button>
+    <button class="btn btn-primary" *ngIf="!user.isEmailVerified && !isSuperAdmin" (click)="requestVerificationLink('email')">Verify Email</button>
+    <button class="btn btn-primary" *ngIf="user.contact && user.contact !== '' && !user.isContactVerified && !isSuperAdmin" (click)="requestVerificationLink('contact')">Verify Contact</button>
     <button class="btn btn-primary" [disabled]="!user.isEmailVerified" (click)="showNotifications()">Notifications</button>
     <button class="btn btn-primary" *ngIf="!user.is2FAEnabled && formTag !== 'enable2FA' && !isSuperAdmin" (click)="enable2FARequest()">Enable 2FA</button>
-    <button class="ui success button" routerLink="{{tradeUrl}}">My Trades</button>
+    <button class="ui success button" routerLink="{{tradeUrl}}">View Trades</button>
     <button class="btn btn-primary" *ngIf="!isSuperAdmin" [disabled]="!user.is2FAEnabled" routerLink="/execute-trade">Execute Trade</button>
     <button class="btn btn-primary" *ngIf="isSuperAdmin" routerLink="/super-admin">Super admin home</button>
   </div>
