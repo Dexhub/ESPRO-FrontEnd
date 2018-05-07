@@ -46,6 +46,10 @@ const routes: Routes = [
     pathMatch: 'full',
   },
   {
+    path: 'privatedata/:id', component: UsersComponent,
+    pathMatch: 'full',
+  },
+  {
     path: 'not-found', loadChildren: './not-found/not-found.module#NotFoundModule',
     pathMatch: 'full',
   },

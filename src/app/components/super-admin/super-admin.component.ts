@@ -28,7 +28,11 @@ export class SuperAdminComponent {
       this.getUserList();
     }
   }
-
+  signOut() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('isSuperAdmin');
+    this.isLoggedIn = false;
+  }
   ngOnInit() {
     this.socketService.disconnect();
     if (localStorage.getItem('token')) {

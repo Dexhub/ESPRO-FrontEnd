@@ -5,8 +5,11 @@
   <button routerLink="/coin-info" class="ui success button">
     coin info
   </button>
-  <button routerLink="/users" class="ui success button">
-    home
+  <button routerLink="{{backUrl}}" class="ui success button">
+    back
+  </button>
+  <button routerLink="/super-admin" *ngIf="isSuperAdmin" class="ui primary button">
+    super admin home
   </button>
 </div>
 <h3 class="heading">{{userIdError}}</h3>

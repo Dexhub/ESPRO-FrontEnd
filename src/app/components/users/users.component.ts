@@ -78,26 +78,50 @@ export class UsersComponent {
   public pageNumbers: any = [];
   public socketData: any = {};
   public totalPortFolio = 0;
+  public userId: number = 0;
+  public isSuperAdmin: boolean = false;
   public dtOptions: DataTables.Settings = {
      paging: true,
      pagingType: 'simple',
      autoWidth: true
    };
+  public backUrl: string = '/users';
   constructor(public router: Router, public commonService: CommonService, private route: ActivatedRoute, public socketService: SocketService) {
     this.resetForm();
-    this.commonService.getMethod(`${apiUrl.user}/exchanges`)
+    this.route.params.subscribe(params => {
+      if (params.id) {
+        this.userId = params.id;
+      }
+    });
+    if (localStorage.getItem('isSuperAdmin')) {
+     this.isSuperAdmin = true;
+      if (this.router.url == '/privatedata') {
+        this.router.navigate([`/super-admin`]);
+      }
+      this.backUrl = `/users/${this.userId}`;
+    }
+    this.commonService.getMethod(`${apiUrl.user}/exchanges`, this.userId.toString(), this.isSuperAdmin)
     .then((data:{ status: Boolean, info: { exchanges: Array<Exchange> } }) => {
       this.exchanges = data.info.exchanges;
     });
     this.route.params.subscribe(params => {
-      this.commonService.getMethod(`${apiUrl.user}/accountinfo`)
+      this.commonService.getMethod(`${apiUrl.user}/accountinfo`, this.userId.toString(), this.isSuperAdmin)
       .then((data:{ status: Boolean, info: { userAccountInfo: Array<UserAccount> } }) => {
         this.userAccounts = data.info.userAccountInfo;
+      })
+      .catch((error) => {
+        this.processError(error);
       });
       this.getTradesHistory();
       this.getAggregationAmount();
       this.getPortFolio();
     });
+  }
+
+  processError(error) {
+    if (error.errormessage) {
+      this.userIdError = error.errormessage;
+    }
   }
 
     ngOnInit() {
@@ -161,7 +185,7 @@ export class UsersComponent {
 
     getPortFolio() {
       this.portfolio = { change1d: {}, percentageContribution: [], portfolioData: [], percentageContributionObj: { data: {}, keys: [] } };
-      this.commonService.getMethod(`${apiUrl.portfolio}/fetch`)
+      this.commonService.getMethod(`${apiUrl.portfolio}/fetch`, this.userId.toString(), this.isSuperAdmin)
       .then((res:any) => {
         this.portfolio = res.info;
         this.portfolio.percentageContributionObj = { data: {}, keys: [] };
@@ -181,15 +205,14 @@ export class UsersComponent {
         this.totalPortFolio = totalAmount;
       })
       .catch((error) => {
-        console.log(error);
-        this.error = error.errormessage;
+        this.processError(error);
       });
     }
 
     getAggregationAmount() {
       this.aggregateAmount = [];
       this.aggregateAmountObj = { data: {}, keys: [] };
-      this.commonService.getMethod(`${apiUrl.trade}/amount`)
+      this.commonService.getMethod(`${apiUrl.trade}/amount`, this.userId.toString(), this.isSuperAdmin)
       .then((res: { success:Boolean, info: { coinTotalAmount: Array<AggregateAmount> } }) => {
         this.aggregateAmount = res.info.coinTotalAmount;
         this.aggregateAmount.forEach((obj) => {
@@ -199,8 +222,7 @@ export class UsersComponent {
         });
       })
       .catch((error) => {
-        console.log(error);
-        this.error = error.errormessage;
+        this.processError(error);
       });
     }
 
@@ -258,7 +280,7 @@ export class UsersComponent {
     onSubmit(data: UserInfoData) {
       this.validateUserInfoData(data);
       if (this.error === '') {
-        this.commonService.postMethod(data, `${apiUrl.user}/authenticate`)
+        this.commonService.postMethod(data, `${apiUrl.user}/authenticate`, this.userId.toString(), this.isSuperAdmin)
         .then((res: { success: Boolean, info: { userAccountId: number, exchangeName: string } }) => {
           this.userAccounts.unshift({
             accountName: data.accountName,
@@ -272,15 +294,14 @@ export class UsersComponent {
           this.resetForm();
         })
         .catch((error) => {
-          console.log(error)
-          this.error = error.errormessage;
-        })
+          this.processError(error);
+        });
       }
     }
 
     syncBalance(exchangeId:number, userAccountId: number) {
       this.balanceSync[`${userAccountId}`] = true;
-      this.commonService.postMethod({ userAccountId }, `${apiUrl.balance}/fetch`)
+      this.commonService.postMethod({ userAccountId }, `${apiUrl.balance}/fetch`, this.userId.toString(), this.isSuperAdmin)
       .then((res: { success: Boolean, info: { message: string } }) => {
         this.balanceSync[`${userAccountId}`] = false;
       })
@@ -293,26 +314,23 @@ export class UsersComponent {
 
     syncTradeHistory(exchangeId:number, userAccountId: number) {
       this.tradesSync[`${userAccountId}`] = true;
-      this.commonService.postMethod({ userAccountId }, `${apiUrl.trade}/fetch`)
+      this.commonService.postMethod({ userAccountId }, `${apiUrl.trade}/fetch`, this.userId.toString(), this.isSuperAdmin)
       .then((res: { success: Boolean, info: { message: string } }) => {
         this.tradesSync[`${userAccountId}`] = false;
       })
       .catch((error) => {
-        console.log(error);
-        this.error = error.errormessage;
-        this.tradesSync[`${userAccountId}`] = false;
+        this.processError(error);
       });
     }
 
     getTradesHistory() {
       this.trades = [];
-      this.commonService.getMethod(`${apiUrl.trade}/fetch?limit=5000`)
+      this.commonService.getMethod(`${apiUrl.trade}/fetch?limit=5000`, this.userId.toString(), this.isSuperAdmin)
       .then((res: { success:Boolean, info: { trades: Array<TradeObj> } }) => {
         this.trades = res.info.trades;
       })
       .catch((error) => {
-        this.error = error.errormessage;
-        console.log(error);
+        this.processError(error);
       });
     }
 }

@@ -42,8 +42,12 @@ export class HomeComponent {
   public editProfile = false;
   public isSuperAdmin = false;
   public userId: number = 0;
+  public tradeUrl: string = '/privatedata';
 
   constructor(public router: Router, public commonService: CommonService, public socketService: SocketService, private auth: AuthService, private route: ActivatedRoute) {
+    if (localStorage.getItem('isSuperAdmin')) {
+      this.isSuperAdmin = true;
+    }
     this.route.params.subscribe(params => {
       if (params.id) {
         this.userId = params.id;
@@ -55,7 +59,10 @@ export class HomeComponent {
       this.getMySubscriptions();
     }
     if (localStorage.getItem('isSuperAdmin')) {
-      this.isSuperAdmin = true;
+      if (this.router.url == '/users') {
+        this.router.navigate([`/super-admin`]);
+      }
+      this.tradeUrl = `/privatedata/${this.userId}`;
     }
   }
 
@@ -127,11 +134,7 @@ export class HomeComponent {
   }
 
   getMyProfile() {
-    let url = `${apiUrl.user}/profile`;
-    if (this.isSuperAdmin) {
-      url += `/${this.userId}`
-    }
-    this.commonService.getMethod(url)
+    this.commonService.getMethod(`${apiUrl.user}/profile`, this.userId.toString(), this.isSuperAdmin)
     .then((profileData: any) => {
       this.isLoading = false;
       if (profileData.status && profileData.info && profileData.info.user) {
@@ -153,7 +156,7 @@ export class HomeComponent {
   forgetPassword(data) {
     this.resetErrorSuccessMsg();
     if (!this.forgetPasswordForm.controls.username.errors) {
-      this.commonService.postMethod(data, `${apiUrl.user}/password/forget`)
+      this.commonService.postMethod(data, `${apiUrl.user}/password/forget`, this.userId.toString(), this.isSuperAdmin)
       .then((success:any) => {
         this.resetForgetPasswordForm();
         this.formTag = 'resetPassword';
@@ -168,7 +171,7 @@ export class HomeComponent {
   resetPassword(data) {
     this.resetErrorSuccessMsg();
     if (!this.resetPasswordForm.controls.password.errors && !this.resetPasswordForm.controls.code.errors) {
-      this.commonService.postMethod(data, `${apiUrl.user}/password/reset`)
+      this.commonService.postMethod(data, `${apiUrl.user}/password/reset`, this.userId.toString(), this.isSuperAdmin)
       .then((success:any) => {
         this.resetForgetPasswordForm();
         this.formTag = 'login';
@@ -183,7 +186,7 @@ export class HomeComponent {
   updateUserDetails(data:any) {
     this.resetErrorSuccessMsg();
     if (!this.editProfileForm.controls.username.errors && !this.editProfileForm.controls.email.errors && !this.editProfileForm.controls.contact.errors) {
-      this.commonService.putMethod(data, `${apiUrl.user}/updateprofile`)
+      this.commonService.putMethod(data, `${apiUrl.user}/updateprofile`, this.userId.toString(), this.isSuperAdmin)
       .then((success:any) => {
         this.editProfile = false;
         this.message = success.info.message;
@@ -204,7 +207,7 @@ export class HomeComponent {
 
   socialLogin(user) {
     this.resetErrorSuccessMsg();
-    this.commonService.postMethod({ authToken: user.authToken, provider: user.provider }, `${apiUrl.user}/login/social`)
+    this.commonService.postMethod({ authToken: user.authToken, provider: user.provider }, `${apiUrl.user}/login/social`, this.userId.toString(), this.isSuperAdmin)
     .then((loginData: any) => {
       this.isLoading = false;
       this.processLogin(loginData);
@@ -265,7 +268,7 @@ export class HomeComponent {
 
   signUp(data:any) {
     this.resetErrorSuccessMsg();
-    this.commonService.postMethod(data, `${apiUrl.user}/signup`)
+    this.commonService.postMethod(data, `${apiUrl.user}/signup`, this.userId.toString(), this.isSuperAdmin)
     .then((signUpdata: any) => {
       this.processLogin(signUpdata);
     })
@@ -276,7 +279,7 @@ export class HomeComponent {
 
   requestVerificationLink(verificationType) {
     this.resetErrorSuccessMsg();
-    this.commonService.getMethod(`${apiUrl.user}/verificationlink?verificationType=${verificationType}`)
+    this.commonService.getMethod(`${apiUrl.user}/verificationlink?verificationType=${verificationType}`, this.userId.toString(), this.isSuperAdmin)
     .then((verificationData: any) => {
       if (verificationData.status) {
         this.message = verificationData.info.message;
@@ -291,7 +294,7 @@ export class HomeComponent {
 
   login(data: any) {
     this.resetErrorSuccessMsg();
-    this.commonService.postMethod(data, `${apiUrl.user}/login`)
+    this.commonService.postMethod(data, `${apiUrl.user}/login`, this.userId.toString(), this.isSuperAdmin)
     .then((loginData: any) => {
       this.processLogin(loginData);
     })
@@ -325,7 +328,7 @@ export class HomeComponent {
   enable2FARequest() {
     this.resetErrorSuccessMsg();
     if (this.qrCodeImage === '') {
-      this.commonService.getMethod(`${apiUrl.user}/qrcode`)
+      this.commonService.getMethod(`${apiUrl.user}/qrcode`, this.userId.toString(), this.isSuperAdmin)
       .then((qrCodeData: any) => {
         if (qrCodeData.status) {
           this.qrCodeImage = qrCodeData.info.QRCode;
@@ -344,7 +347,7 @@ export class HomeComponent {
 
   enable2FA() {
     this.resetErrorSuccessMsg();
-    this.commonService.getMethod(`${apiUrl.user}/2fa/enable?code=${this.code}`)
+    this.commonService.getMethod(`${apiUrl.user}/2fa/enable?code=${this.code}`, this.userId.toString(), this.isSuperAdmin)
     .then((success: any) => {
       if (success.status) {
         this.message = success.info.message;
@@ -427,7 +430,7 @@ export class HomeComponent {
   }
 
   getCoinsList() {
-    this.commonService.getMethod(`${apiUrl.coinsid}`)
+    this.commonService.getMethod(`${apiUrl.coinsid}`, this.userId.toString(), this.isSuperAdmin)
     .then((res:any) => {
       if (res.status) {
         this.coinsList = res.info.coins;
@@ -485,7 +488,7 @@ export class HomeComponent {
   onSubmitSubscriptionUpdate(data) {
     data = this.validateSubscriptionData(data);
     if (data) {
-      this.commonService.putMethod(data, `${apiUrl.user}/subscribe/${data.subscriptionId}`)
+      this.commonService.putMethod(data, `${apiUrl.user}/subscribe/${data.subscriptionId}`, this.userId.toString(), this.isSuperAdmin)
       .then((res: any) => {
         if (res.status) {
           this.resetSubscriptionForm();
@@ -504,7 +507,7 @@ export class HomeComponent {
   onSubmitSubscription(data:any) {
     data = this.validateSubscriptionData(data);
     if (data) {
-      this.commonService.postMethod(data, `${apiUrl.user}/subscription`)
+      this.commonService.postMethod(data, `${apiUrl.user}/subscription`, this.userId.toString(), this.isSuperAdmin)
       .then((res: any) => {
         this.resetSubscriptionForm();
         this.subscriptions.push(res.info.notification);
@@ -540,7 +543,7 @@ export class HomeComponent {
 
   getMySubscriptions() {
     this.subscriptions = [];
-    this.commonService.getMethod(`${apiUrl.user}/subscription`)
+    this.commonService.getMethod(`${apiUrl.user}/subscription`, this.userId.toString(), this.isSuperAdmin)
     .then((subscriptions: any) => {
       if (subscriptions.status) {
         this.subscriptions = subscriptions.info.subscriptions;
@@ -552,7 +555,7 @@ export class HomeComponent {
   }
 
   deleteSubscription(index) {
-    this.commonService.deleteMethod(`${apiUrl.user}/subscription/${this.subscriptions[index].id}`)
+    this.commonService.deleteMethod(`${apiUrl.user}/subscription/${this.subscriptions[index].id}`, this.userId.toString(), this.isSuperAdmin)
     .then((subscriptions: any) => {
       this.subscriptions.splice(index, 1);
     })
