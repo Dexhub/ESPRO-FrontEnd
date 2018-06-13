@@ -212,7 +212,7 @@
                   <td>{{trade.createdAt}}</td>
                   <td>{{jsonStringify(trade.inputJson)}}</td>
                   <td>{{jsonStringify(trade.outputJson)}}</td>
-                  <td>{{trade.status}}</td>
+                  <td class="{{trade.class || 'nautral'}}">{{trade.status}}</td>
                 </tr>
               </ng-container>
             </tbody>

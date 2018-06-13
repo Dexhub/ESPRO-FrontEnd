@@ -3,6 +3,7 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { apiUrl } from '../../constants/constants';
 import { CommonService, SocketService } from '../../services';
+import { Observable, Subject } from 'rxjs/Rx';
 
 @Component({
   selector: 'trade-app',
@@ -33,14 +34,32 @@ export class TradeComponent {
        this.error = err;
      });
    }
+  public socketData: any = {};
    ngOnInit() {
-    this.socketService.disconnect();
     const is2FAEnabled = localStorage.getItem('is2FAEnabled');
     this.is2FAEnabled = is2FAEnabled && is2FAEnabled.toString() === 'true' ? true : false;
     if (this.is2FAEnabled) {
       this.getMyTrades();
       this.getPortFolio();
     }
+    this.socketService.connect();
+    this.socketData = <Subject<MessageEvent>>this.socketService.getMessage()
+      .map((response: MessageEvent): MessageEvent => {
+        return response;
+      });
+      this.socketData.subscribe((msg: any) => {
+        if (msg.type === 'orderStatusChange') {
+          this.myTrades.forEach((trade:any) => {
+            if (msg.data.tradeId === trade.outputJson.id) {
+              trade.class = 'increase';
+              trade.status = msg.data.status;
+              setTimeout(() => {
+                trade.class = 'neutral';
+              }, 10000);
+            }
+          });
+        }
+      });
    }
    resetForm() {
      this.form = new FormGroup({

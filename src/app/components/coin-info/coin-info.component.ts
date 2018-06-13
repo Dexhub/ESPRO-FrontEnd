@@ -15,8 +15,11 @@ import * as _ from 'lodash';
 })
 export class CoinInfoComponent {
   public coinError:string = '';
+  public isPriceGraphDataLoaded:Boolean = false;
+  public isVolumeGraphDataLoaded:Boolean = false;
+  public isMarketCapGraphDataLoaded:Boolean = false;
   public isLoggedIn: Boolean = false;
-  public coin: string = 'BTC';
+  public coin: string = 'INK';
   public days: number = 30;
   public interval: number = 60;
   public coinPriceChartData: any = { data: [{ data: [], label: "coin price" }], label: [] };
@@ -40,26 +43,57 @@ export class CoinInfoComponent {
     this.coinMarketCapChartData = { data: [{ data: [], label: "market cap" }], label: [] };
     this.coinData = {};
     if (this.coin !== "") {
-      this.commonService.getMethod(`${apiUrl.coininfo}?coin=${this.coin}&fetchHistory=true&days=${this.days}&interval=${this.interval}`)
+      this.commonService.getMethod(`${apiUrl.coininfo}?coin=${this.coin}`)
       .then((data:any) => {
         this.coinData = data.info[0];
-        this.coinData.history.prices.forEach((price) => {
-          const key = this.objKeys(price)[0];
-          this.coinPriceChartData.label.push(key);
-          this.coinPriceChartData.data[0].data.push(price[key]);
-        });
-        this.coinData.history['24h_volume_usd'].forEach((volume) => {
-          const key = this.objKeys(volume)[0];
-          this.coinVolumeChartData.label.push(key);
-          this.coinVolumeChartData.data[0].data.push(volume[key]);
-        });
-        this.coinData.history.market_cap_usd.forEach((marketCap) => {
-          const key = this.objKeys(marketCap)[0];
-          this.coinMarketCapChartData.label.push(key);
-          this.coinMarketCapChartData.data[0].data.push(marketCap[key]);
-        });
       });
     }
+    this.getGraphData();
+  }
+
+  getGraphData() {
+    // get price history
+    this.isPriceGraphDataLoaded = false;
+    this.commonService.getMethod(`${apiUrl.graph}?coin=${this.coin}&days=${this.days}&interval=${this.interval}&type=price`)
+    .then((data:any) => {
+      data.info.graphData.forEach((price) => {
+        this.coinPriceChartData.label.push(price.time);
+        this.coinPriceChartData.data[0].data.push(price.value);
+      });
+      this.isPriceGraphDataLoaded = true;
+    });
+
+    // get volume history
+    this.isVolumeGraphDataLoaded = false;
+    this.commonService.getMethod(`${apiUrl.graph}?coin=${this.coin}&days=${this.days}&interval=${this.interval}&type=volume`)
+    .then((data:any) => {
+      data.info.graphData.forEach((volume) => {
+        this.coinVolumeChartData.label.push(volume.time);
+        this.coinVolumeChartData.data[0].data.push(volume.value);
+      });
+      this.isVolumeGraphDataLoaded = true;
+    });
+
+    // get marketCap history
+    this.isMarketCapGraphDataLoaded = false;
+    this.commonService.getMethod(`${apiUrl.graph}?coin=${this.coin}&days=${this.days}&interval=${this.interval}&type=marketCap`)
+    .then((data:any) => {
+      data.info.graphData.forEach((marketCap) => {
+        this.coinMarketCapChartData.label.push(marketCap.time);
+        this.coinMarketCapChartData.data[0].data.push(marketCap.value);
+      });
+      this.isMarketCapGraphDataLoaded = true;
+    });
+    // this.coinData.history['24h_volume_usd'].forEach((volume) => {
+    //   const key = this.objKeys(volume)[0];
+    //   this.coinVolumeChartData.label.push(key);
+    //   this.coinVolumeChartData.data[0].data.push(volume[key]);
+    // });
+    // this.coinData.history.market_cap_usd.forEach((marketCap) => {
+    //   const key = this.objKeys(marketCap)[0];
+    //   this.coinMarketCapChartData.label.push(key);
+    //   this.coinMarketCapChartData.data[0].data.push(marketCap[key]);
+    // });
   }
 
   objKeys(obj:object) {

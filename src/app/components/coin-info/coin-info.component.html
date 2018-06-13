@@ -29,7 +29,7 @@
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 col-xl-12">
     <div class="timeline-panel">
       <div class="row">
-        <div class="col-sm-12" *ngIf="coinData.history && coinData.history.prices">
+        <div class="col-sm-12">
           <br/>
           <h6>Coin name: {{coinData.name}}</h6>
           <h6>Coin symbol: {{coinData.symbol}}</h6>
@@ -46,7 +46,7 @@
           <h6>Coin total supply: {{coinData.totalSupply}} </h6>
           <br/><br/>
 
-          <table class="table row-border hover" datatable="ng" [dtOptions]="dtOptions">
+          <table *ngIf="coinData.history && coinData.history.prices" class="table row-border hover" datatable="ng" [dtOptions]="dtOptions">
             <thead>
               <tr>
                 <th>Time</th>
@@ -69,10 +69,10 @@
     </div>
   </div>
 
-  <div class="col-lg-12 col-md-12"  *ngIf="coinPriceChartData.label[0]">
+  <div class="col-lg-12 col-md-12">
     <h5 class="heading">Coin Data Chart</h5>
 
-    <div class="card mb-3">
+    <div class="card mb-3" *ngIf="isPriceGraphDataLoaded">
       <div class="card-header">
         coin price change over time
       </div>
@@ -86,7 +86,7 @@
       </div>
     </div>
 
-    <div class="card mb-3">
+    <div class="card mb-3" *ngIf="isVolumeGraphDataLoaded">
       <div class="card-header">
         coin volume change over time
       </div>
@@ -100,7 +100,7 @@
       </div>
     </div>
 
-    <div class="card mb-3">
+    <div class="card mb-3" *ngIf="isMarketCapGraphDataLoaded">
       <div class="card-header">
         market cap change over time
       </div>
